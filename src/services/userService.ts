@@ -20,12 +20,18 @@ import type { User, UserDocument } from "@/types/user";
 
 const usersCollectionRef = collection(db, "users");
 
-// Função para criar um novo usuário (recepcionista)
-export async function createUser(email: string, password: string): Promise<User> {
+// Função para criar um novo usuário (recepcionista) via convite por e-mail
+export async function createUser(email: string): Promise<User> {
   try {
-    // Cria o usuário no Firebase Authentication
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    // Gerar uma senha temporária e forte. O usuário será forçado a redefini-la imediatamente.
+    const tempPassword = Math.random().toString(36).slice(-10) + 'A1$';
+
+    // Cria o usuário no Firebase Authentication com a senha temporária
+    const userCredential = await createUserWithEmailAndPassword(auth, email, tempPassword);
     const authUser = userCredential.user;
+
+    // Envia o e-mail para o usuário definir sua própria senha
+    await sendPasswordResetEmail(auth, email);
 
     // Cria o documento do usuário no Firestore para armazenar a role
     const newUserDoc: UserDocument = {
@@ -45,11 +51,9 @@ export async function createUser(email: string, password: string): Promise<User>
   } catch (error: any) {
     if (error.code === 'auth/email-already-in-use') {
       throw new Error('Este e-mail já está em uso.');
-    } else if (error.code === 'auth/weak-password') {
-      throw new Error('A senha é muito fraca.');
     }
     console.error("Erro ao criar usuário: ", error);
-    throw new Error("Não foi possível criar o usuário.");
+    throw new Error("Não foi possível criar o usuário. Verifique se o e-mail é válido.");
   }
 }
 

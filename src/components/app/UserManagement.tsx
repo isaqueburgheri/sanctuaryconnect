@@ -76,23 +76,18 @@ export default function UserManagement() {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
     
-    if (!email || !password) {
-        toast({ variant: 'destructive', title: 'Erro', description: 'Por favor, preencha todos os campos.' });
-        return;
-    }
-    if (password.length < 6) {
-        toast({ variant: 'destructive', title: 'Erro', description: 'A senha deve ter pelo menos 6 caracteres.' });
+    if (!email) {
+        toast({ variant: 'destructive', title: 'Erro', description: 'Por favor, preencha o campo de e-mail.' });
         return;
     }
 
     try {
-      const newUser = await createUser(email, password);
+      const newUser = await createUser(email);
       setUsers(prev => [...prev, newUser]);
       toast({
-        title: "Usuário Criado!",
-        description: `O usuário ${email} foi criado com sucesso.`,
+        title: "Usuário Convidado!",
+        description: `Um convite para definir a senha foi enviado para ${email}.`,
       });
       setIsDialogOpen(false);
     } catch (error) {
@@ -145,7 +140,7 @@ export default function UserManagement() {
                     <DialogHeader>
                     <DialogTitle>Adicionar Novo Recepcionista</DialogTitle>
                     <DialogDescription>
-                        Crie uma conta para um novo membro da equipe.
+                        Insira o e-mail do novo membro para enviar um convite.
                     </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
@@ -155,15 +150,9 @@ export default function UserManagement() {
                         </Label>
                         <Input id="email" name="email" type="email" className="col-span-3" placeholder="nome@adbelem.com" required />
                     </div>
-                     <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="password" className="text-right">
-                        Senha
-                        </Label>
-                        <Input id="password" name="password" type="password" className="col-span-3" placeholder="Senha inicial" required />
-                    </div>
                     </div>
                     <DialogFooter>
-                      <Button type="submit">Criar Usuário</Button>
+                      <Button type="submit">Convidar Usuário</Button>
                     </DialogFooter>
                 </form>
               </DialogContent>
