@@ -1,34 +1,29 @@
 'use server';
-import {NextRequest, NextResponse} from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import * as admin from 'firebase-admin';
 
-if (!admin.apps.length) {
-  admin.initializeApp();
-}
-const auth = admin.auth();
-const db = admin.firestore();
-
-async function verifyAdmin(req: NextRequest): Promise<string> {
-  const idToken = req.headers.get('Authorization')?.split('Bearer ')[1];
-  if (!idToken) {
-    throw new Error('No auth token provided');
+function initializeAdmin() {
+  if (!admin.apps.length) {
+    admin.initializeApp();
   }
-  const decodedToken = await auth.verifyIdToken(idToken);
-  const callingUid = decodedToken.uid;
-
-  const userDoc = await db.collection('users').doc(callingUid).get();
-  if (!userDoc.exists() || userDoc.data()?.role !== 'Admin') {
-    throw new Error('Permission denied. Not an admin.');
-  }
-  return callingUid;
+  return { auth: admin.auth(), db: admin.firestore() };
 }
 
 export async function POST(req: NextRequest) {
   try {
-    await verifyAdmin(req);
+    const { auth, db } = initializeAdmin();
+
+    const idToken = req.headers.get('Authorization')?.split('Bearer ')[1];
+    if (!idToken) {
+      return NextResponse.json({ error: 'Authentication token is missing.' }, { status: 401 });
+    }
+    const decodedToken = await auth.verifyIdToken(idToken);
+    const userDocCheck = await db.collection('users').doc(decodedToken.uid).get();
+    if (!userDocCheck.exists() || userDocCheck.data()?.role !== 'Admin') {
+      return NextResponse.json({ error: 'Permission denied. Only administrators can create users.' }, { status: 403 });
+    }
 
     const { email, password } = await req.json();
-
     if (!email || !password || password.length < 6) {
       return NextResponse.json({ error: 'Email and a password of at least 6 characters are required.' }, { status: 400 });
     }
@@ -43,7 +38,6 @@ export async function POST(req: NextRequest) {
       role: 'Recepção',
       createdAt: admin.firestore.Timestamp.now(),
     };
-
     await db.collection('users').doc(userRecord.uid).set(newUserDoc);
 
     const newUser = {
@@ -51,25 +45,18 @@ export async function POST(req: NextRequest) {
         email: newUserDoc.email,
         role: newUserDoc.role,
         createdAt: newUserDoc.createdAt.toDate().toISOString(),
-    }
+    };
 
     return NextResponse.json({ message: 'User created successfully', user: newUser }, { status: 201 });
 
   } catch (error: any) {
     console.error('API Error creating user:', error);
-    let message = 'An internal server error occurred.';
-    let status = 500;
-    if (error.message.includes('No auth token')) {
-        message = 'Authentication token is missing.';
-        status = 401;
-    } else if (error.message.includes('Not an admin')) {
-        message = 'Permission denied. Only administrators can create users.';
-        status = 403;
-    } else if (error.code === 'auth/email-already-exists') {
-        message = 'This email is already in use by another account.';
-        status = 409;
+    if (error.code === 'auth/email-already-exists') {
+        return NextResponse.json({ error: 'This email is already in use by another account.' }, { status: 409 });
     }
-    
-    return NextResponse.json({ error: message }, { status });
+     if (error.code === 'auth/id-token-expired' || error.code === 'auth/argument-error') {
+      return NextResponse.json({ error: 'Authentication token is invalid or expired.' }, { status: 401 });
+    }
+    return NextResponse.json({ error: 'An internal server error occurred.' }, { status: 500 });
   }
 }
