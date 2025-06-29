@@ -213,16 +213,16 @@ export default function UserList() {
                       <FormItem>
                         <FormLabel>Cargo</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
-  <FormControl>
-    <SelectTrigger>
-      <SelectValue placeholder="Selecione o cargo" />
-    </SelectTrigger>
-  </FormControl>
-  <SelectContent>
-    <SelectItem value="Admin">Admin</SelectItem>
-    <SelectItem value="Recepção">Recepção</SelectItem>
-  </SelectContent>
-</Select>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione o cargo" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="Admin">Admin</SelectItem>
+                            <SelectItem value="Recepção">Recepção</SelectItem>
+                          </SelectContent>
+                        </Select>
                          <FormMessage />
                       </FormItem>
                     )}
@@ -245,70 +245,72 @@ export default function UserList() {
         </div>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Email do Usuário</TableHead>
-              <TableHead>Cargo</TableHead>
-              <TableHead className="text-right">Ações</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={3} className="text-center h-24">
-                   <div className="flex justify-center items-center gap-2">
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                    <span>Carregando usuários...</span>
-                  </div>
-                </TableCell>
+                <TableHead>Email do Usuário</TableHead>
+                <TableHead>Cargo</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
               </TableRow>
-            ) : users.length > 0 ? (
-              users.map((user) => {
-                const isCurrentUser = currentUser?.uid === user.id;
-                return (
-                  <TableRow key={user.id}>
-                    <TableCell className="font-medium">{user.email || user.id}</TableCell>
-                    <TableCell>
-                      <Badge variant={user.role === 'Admin' ? 'default' : 'secondary'}>
-                        {user.role}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                       <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="destructive" size="icon" disabled={isCurrentUser} title={isCurrentUser ? "Você não pode excluir sua própria conta" : "Remover acesso do usuário"}>
-                              <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Esta ação removerá o acesso do usuário ao aplicativo, mas a conta de autenticação dele permanecerá no sistema. O usuário <span className="font-bold">{user.email}</span> não poderá mais fazer login.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => handleDeleteUser(user.id)}>
-                              Remover Acesso
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </TableCell>
-                  </TableRow>
-                )
-              })
-            ) : (
-              <TableRow>
-                <TableCell colSpan={3} className="text-center h-24">
-                  Nenhum usuário encontrado.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={3} className="text-center h-24">
+                    <div className="flex justify-center items-center gap-2">
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      <span>Carregando usuários...</span>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : users.length > 0 ? (
+                users.map((user) => {
+                  const isCurrentUser = currentUser?.uid === user.id;
+                  return (
+                    <TableRow key={user.id}>
+                      <TableCell className="font-medium">{user.email || user.id}</TableCell>
+                      <TableCell>
+                        <Badge variant={user.role === 'Admin' ? 'default' : 'secondary'}>
+                          {user.role}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="destructive" size="icon" disabled={isCurrentUser} title={isCurrentUser ? "Você não pode excluir sua própria conta" : "Remover acesso do usuário"}>
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Esta ação removerá o acesso do usuário ao aplicativo, mas a conta de autenticação dele permanecerá no sistema. O usuário <span className="font-bold">{user.email}</span> não poderá mais fazer login.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDeleteUser(user.id)}>
+                                Remover Acesso
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={3} className="text-center h-24">
+                    Nenhum usuário encontrado.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </CardContent>
     </Card>
   );
