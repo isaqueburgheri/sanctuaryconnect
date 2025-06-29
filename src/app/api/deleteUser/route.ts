@@ -1,21 +1,18 @@
 import {NextRequest, NextResponse} from 'next/server';
 import * as admin from 'firebase-admin';
 
-// As credenciais são gerenciadas automaticamente pelo ambiente do App Hosting
-const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
-
 // Inicializa o Firebase Admin SDK (apenas uma vez)
+// Em um ambiente gerenciado como o App Hosting, initializeApp() infere as credenciais.
 if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.applicationDefault(),
-    databaseURL: `https://${projectId}.firebaseio.com`,
-  });
+  admin.initializeApp();
 }
 
 const db = admin.firestore();
 const auth = admin.auth();
 
 export async function POST(req: NextRequest) {
+  let targetUid: string | undefined;
+
   try {
     // Pega o token de autenticação do header
     const idToken = req.headers.get('Authorization')?.split('Bearer ')[1];
@@ -25,7 +22,7 @@ export async function POST(req: NextRequest) {
     
     // Pega os dados do corpo da requisição
     const body = await req.json();
-    const { uid: targetUid } = body;
+    targetUid = body.uid;
 
     if (!targetUid) {
         return NextResponse.json({ error: 'UID do usuário não fornecido.' }, { status: 400 });
@@ -59,16 +56,17 @@ export async function POST(req: NextRequest) {
     {
     console.error('Erro na API ao excluir usuário:', error);
     let message = 'Ocorreu um erro interno ao processar sua solicitação.';
-     if (error instanceof Error && 'code' in error && error.code === 'auth/user-not-found') {
+     if (error.code === 'auth/user-not-found') {
         // Se o usuário não existe no Auth, tenta deletar do Firestore mesmo assim.
-        try {
-            const { uid: targetUid } = await req.json();
-            if (targetUid) {
-              await db.collection('users').doc(targetUid).delete();
-              return NextResponse.json({ message: 'Usuário não encontrado na autenticação, registro do Firestore removido.' }, { status: 200 });
+        if (targetUid) {
+            try {
+                await db.collection('users').doc(targetUid).delete();
+                return NextResponse.json({ message: 'Usuário não encontrado na autenticação, registro do Firestore removido.' }, { status: 200 });
+            } catch (dbError) {
+                message = 'Usuário não encontrado na autenticação e falha ao remover do Firestore.';
             }
-        } catch (dbError) {
-             message = 'Usuário não encontrado na autenticação e falha ao remover do Firestore.';
+        } else {
+            message = "UID do usuário não estava disponível para limpeza do Firestore.";
         }
     }
     return NextResponse.json({ error: message }, { status: 500 });

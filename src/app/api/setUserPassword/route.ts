@@ -1,15 +1,10 @@
 import {NextRequest, NextResponse} from 'next/server';
 import * as admin from 'firebase-admin';
 
-// As credenciais são gerenciadas automaticamente pelo ambiente do App Hosting
-const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
-
 // Inicializa o Firebase Admin SDK (apenas uma vez)
+// Em um ambiente gerenciado como o App Hosting, initializeApp() infere as credenciais.
 if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.applicationDefault(),
-    databaseURL: `https://${projectId}.firebaseio.com`,
-  });
+  admin.initializeApp();
 }
 
 const db = admin.firestore();
