@@ -9,12 +9,10 @@ import {z} from 'zod';
 function initializeFirebaseAdmin() {
   if (!admin.apps.length) {
     try {
-      // When deployed to App Hosting, applicationDefault() will use the
-      // App Hosting service account. Explicitly adding the projectId can
-      // resolve potential environment configuration issues.
+      // Reverting to the simplest initialization. On App Hosting, this should
+      // automatically detect the correct project and credentials without explicit projectId.
       admin.initializeApp({
         credential: admin.credential.applicationDefault(),
-        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
       });
       console.log('Firebase Admin SDK initialized successfully.');
     } catch (error: any) {
@@ -75,8 +73,14 @@ export async function POST(req: NextRequest) {
     }
 
     const detailedMessage = error.message || 'Ocorreu um erro desconhecido.';
-    // The previous custom error was pointing to an IAM role that the user has already configured.
-    // Return a more generic message but include the original error for diagnostics.
+    // This is a special handler for the persistent credential issue.
+    // It provides a more helpful error message to the user.
+    if (detailedMessage.includes('failed to fetch a valid Google OAuth2 access token')) {
+        return NextResponse.json({
+            error: 'Erro de Autenticação do Servidor. O aplicativo não consegue se conectar ao Firebase de forma segura. Isso geralmente é um problema de configuração do ambiente na nuvem, não do código. Se o problema persistir, contate o suporte do Firebase.'
+        }, {status: 500});
+    }
+
     return NextResponse.json({error: `Falha na autenticação do servidor: ${detailedMessage}`}, {status: 500});
   }
 }
