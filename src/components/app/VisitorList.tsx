@@ -29,16 +29,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Users, Filter, Loader2, Trash2, Info } from "lucide-react";
+import { Users, Filter, Loader2, Trash2 } from "lucide-react";
 import { getVisitors, getTodaysVisitors, deleteVisitor } from "@/services/visitorService";
 import type { Visitor } from "@/types/visitor";
 import { useToast } from "@/hooks/use-toast";
@@ -137,7 +130,7 @@ export default function VisitorList({ isAdmin = false }: VisitorListProps) {
             <TableHeader>
               <TableRow>
                 <TableHead>Data da Visita</TableHead>
-                <TableHead className="w-[200px] min-w-[150px]">Nome</TableHead>
+                <TableHead>Nome</TableHead>
                 <TableHead>Crente?</TableHead>
                 <TableHead>Igreja</TableHead>
                 <TableHead>Contato</TableHead>
@@ -178,28 +171,8 @@ export default function VisitorList({ isAdmin = false }: VisitorListProps) {
                         {visitor.wantsVisit ? "Sim" : "Não"}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-center">
-                      {visitor.observations ? (
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <Info className="h-4 w-4 text-primary" />
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="sm:max-w-[425px]">
-                            <DialogHeader>
-                              <DialogTitle>Observações de {visitor.name}</DialogTitle>
-                            </DialogHeader>
-                            <div className="py-4">
-                              <p className="text-sm text-muted-foreground break-words whitespace-pre-wrap">
-                                {visitor.observations}
-                              </p>
-                            </div>
-                          </DialogContent>
-                        </Dialog>
-                      ) : (
-                        "-"
-                      )}
+                    <TableCell className="max-w-[250px] whitespace-pre-wrap break-words">
+                      {visitor.observations || "-"}
                     </TableCell>
                     {isAdmin && (
                       <TableCell className="text-right">
