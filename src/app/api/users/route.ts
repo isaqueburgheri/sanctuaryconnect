@@ -4,19 +4,16 @@ import {NextRequest, NextResponse} from 'next/server';
 import * as admin from 'firebase-admin';
 import {z} from 'zod';
 
-function ensureFirebaseAdminInitialized() {
-  if (admin.apps.length > 0 && admin.apps[0]) {
-    return;
-  }
+// Initialize Firebase Admin SDK if not already initialized
+// This module-level initialization is more stable for serverless environments.
+if (!admin.apps.length) {
   try {
     admin.initializeApp({
       credential: admin.credential.applicationDefault(),
     });
+    console.log('Firebase Admin SDK initialized successfully.');
   } catch (error: any) {
     console.error('Firebase Admin initialization error:', error);
-    throw new Error(
-      'Firebase Admin SDK initialization failed: ' + error.message
-    );
   }
 }
 
@@ -27,19 +24,29 @@ const createUserSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  // Check if SDK is initialized
+  if (!admin.apps.length) {
+    console.error('CRITICAL: Firebase Admin SDK is not initialized.');
+    return NextResponse.json(
+      {error: 'Internal server configuration error.'},
+      {status: 500}
+    );
+  }
+
   try {
-    ensureFirebaseAdminInitialized();
     const body = await req.json();
     const {email, password, role} = createUserSchema.parse(body);
 
     const auth = admin.auth();
     const firestore = admin.firestore();
 
+    // 1. Create user in Firebase Authentication
     const userRecord = await auth.createUser({
       email: email,
       password: password,
     });
 
+    // 2. Create user document in Firestore to store role and other data
     await firestore.collection('users').doc(userRecord.uid).set({
       email: email,
       role: role,
@@ -61,42 +68,6 @@ export async function POST(req: NextRequest) {
     } else if (error.message) {
       errorMessage = error.message;
     }
-    return NextResponse.json({error: errorMessage}, {status: 500});
-  }
-}
-
-export async function GET(req: NextRequest) {
-  try {
-    ensureFirebaseAdminInitialized();
-    const adminAuth = admin.auth();
-    const firestore = admin.firestore();
-
-    const listUsersResult = await adminAuth.listUsers(100);
-    const firestoreUsersSnapshot = await firestore.collection('users').get();
-    const rolesMap = new Map<string, 'Admin' | 'Recepção'>();
-    firestoreUsersSnapshot.forEach(doc => {
-      rolesMap.set(doc.id, doc.data().role);
-    });
-
-    const users = listUsersResult.users.map(userRecord => {
-      return {
-        id: userRecord.uid,
-        email: userRecord.email,
-        role: rolesMap.get(userRecord.uid) || 'Unknown',
-        createdAt: userRecord.metadata.creationTime,
-        lastLogin: userRecord.metadata.lastSignInTime,
-      };
-    });
-
-    users.sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
-
-    return NextResponse.json(users, {status: 200});
-  } catch (error: any) {
-    console.error('API Error listing users:', error);
-    const errorMessage =
-      error.message || 'An internal server error occurred while listing users.';
     return NextResponse.json({error: errorMessage}, {status: 500});
   }
 }
