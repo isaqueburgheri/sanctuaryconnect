@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { LogOut, Users, BarChart3 } from "lucide-react";
+import { LogOut, Users, BarChart3, Briefcase } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 export default function AdminHeader() {
@@ -52,6 +52,12 @@ export default function AdminHeader() {
             <Link href="/visitors">
               <Users />
               Visitantes
+            </Link>
+          </Button>
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/reception/dashboard">
+              <Briefcase />
+              Recepção
             </Link>
           </Button>
           <Button variant="outline" size="sm" asChild>
