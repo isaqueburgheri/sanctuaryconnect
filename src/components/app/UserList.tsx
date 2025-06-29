@@ -140,7 +140,7 @@ export default function UserList() {
       await deleteUser(userId);
       toast({
         title: "Sucesso!",
-        description: "Acesso do usuário removido com sucesso.",
+        description: "O acesso do usuário foi removido com sucesso.",
       });
     } catch (error) {
       toast({
