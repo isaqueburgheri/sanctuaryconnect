@@ -1,14 +1,8 @@
-import { auth, db, app } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
 import {
   createUserWithEmailAndPassword,
-  // Para excluir um usuário, você precisaria de um backend (Firebase Functions)
-  // por razões de segurança. Não implementaremos a exclusão de auth aqui.
+  getIdToken,
 } from "firebase/auth";
-import {
-  getFunctions,
-  httpsCallable,
-  Functions,
-} from "firebase/functions";
 import {
   collection,
   doc,
@@ -16,9 +10,6 @@ import {
   getDoc,
   getDocs,
   Timestamp,
-  query,
-  where,
-  deleteDoc,
 } from "firebase/firestore";
 import type { User, UserDocument } from "@/types/user";
 
@@ -74,7 +65,7 @@ export async function getUserRole(uid: string): Promise<User['role'] | null> {
   }
 }
 
-// Função para buscar todos os usuários (exceto o próprio admin, se desejado)
+// Função para buscar todos os usuários
 export async function getAllUsers(): Promise<User[]> {
     try {
         const querySnapshot = await getDocs(usersCollectionRef);
@@ -93,44 +84,64 @@ export async function getAllUsers(): Promise<User[]> {
     }
 }
 
-let functions: Functions;
-function getFunctionsInstance() {
-  if (!functions) {
-    functions = getFunctions(app);
-  }
-  return functions;
-}
-
-// Função para chamar o backend para alterar a senha de um usuário
+// Função para chamar a API para alterar a senha de um usuário
 export async function updateUserPassword(uid: string, newPassword: string): Promise<void> {
-  if (newPassword.length < 6) {
-    throw new Error('A nova senha deve ter pelo menos 6 caracteres.');
+  const currentUser = auth.currentUser;
+  if (!currentUser) {
+      throw new Error("Usuário não autenticado. Por favor, faça login novamente.");
   }
+
   try {
-    const functionsInstance = getFunctionsInstance();
-    const setUserPassword = httpsCallable(functionsInstance, 'setUserPassword');
-    await setUserPassword({ uid, password: newPassword });
-  } catch (error: any) {
-    console.error("Erro ao alterar senha:", error);
-    if (error.code === 'functions/permission-denied') {
-        throw new Error('Você não tem permissão para realizar esta ação.');
+    const idToken = await getIdToken(currentUser);
+
+    const response = await fetch('/api/setUserPassword', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${idToken}`
+        },
+        body: JSON.stringify({ uid: uid, password: newPassword })
+    });
+
+    if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Falha ao alterar a senha.');
     }
-    throw new Error(`Não foi possível alterar a senha. Detalhes: ${error.message}`);
+  } catch (error: any) {
+    console.error("Erro ao chamar a API para alterar senha:", error);
+    throw new Error(error.message || `Não foi possível alterar a senha.`);
   }
 }
 
-// Função para excluir uma conta de usuário
-// ATENÇÃO: Isso exclui o registro no Firestore. A exclusão no Firebase Auth
-// requereria uma função de backend por segurança. O usuário não poderá mais logar
-// pois sua role será removida.
+// Função para chamar a API para excluir uma conta de usuário (Auth + Firestore)
 export async function deleteUserAccount(uid: string): Promise<void> {
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+        throw new Error("Usuário não autenticado. Por favor, faça login novamente.");
+    }
+
+    if (currentUser.uid === uid) {
+        throw new Error("Você não pode excluir sua própria conta.");
+    }
+
     try {
-        const userDocRef = doc(db, "users", uid);
-        await deleteDoc(userDocRef);
-        // NOTA: A exclusão real da autenticação (auth.deleteUser(uid)) deve ser feita
-        // a partir de um ambiente de servidor confiável (ex: Firebase Functions).
-    } catch (error) {
-        console.error("Erro ao excluir usuário: ", error);
-        throw new Error("Não foi possível excluir o usuário.");
+        const idToken = await getIdToken(currentUser);
+
+        const response = await fetch('/api/deleteUser', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}`
+            },
+            body: JSON.stringify({ uid: uid })
+        });
+
+        if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.error || 'Falha ao excluir o usuário.');
+        }
+    } catch (error: any) {
+        console.error("Erro ao chamar a API para excluir usuário:", error);
+        throw new Error(error.message || `Não foi possível excluir o usuário.`);
     }
 }

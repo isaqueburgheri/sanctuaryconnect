@@ -122,6 +122,11 @@ export default function UserManagement() {
     event.preventDefault();
     if (!selectedUser || !newPassword) return;
 
+    if (newPassword.length < 6) {
+        toast({ variant: 'destructive', title: 'Erro', description: 'A senha deve ter pelo menos 6 caracteres.' });
+        return;
+    }
+
     setIsSubmitting(true);
     try {
       await updateUserPassword(selectedUser.id, newPassword);
@@ -289,7 +294,7 @@ export default function UserManagement() {
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   required
-                  minLength={6}
+                  placeholder="Mínimo de 6 caracteres"
                 />
               </div>
             </div>
