@@ -4,12 +4,8 @@ import {
   collection,
   doc,
   getDoc,
-  getDocs,
-  Timestamp,
 } from "firebase/firestore";
 import type { User, UserDocument } from "@/types/user";
-
-const usersCollectionRef = collection(db, "users");
 
 async function getAuthHeaders() {
     const currentUser = auth.currentUser;
@@ -63,19 +59,24 @@ export async function getUserRole(uid: string): Promise<User['role'] | null> {
 
 export async function getAllUsers(): Promise<User[]> {
     try {
-        const querySnapshot = await getDocs(usersCollectionRef);
-        return querySnapshot.docs.map(doc => {
-            const data = doc.data() as UserDocument;
-            return {
-                id: doc.id,
-                email: data.email,
-                role: data.role,
-                createdAt: data.createdAt.toDate(),
-            };
+        const headers = await getAuthHeaders();
+        const response = await fetch('/api/users', {
+            method: 'GET',
+            headers,
         });
-    } catch (error) {
+
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to fetch users.');
+        }
+
+        return data.map((user: any) => ({
+            ...user,
+            createdAt: new Date(user.createdAt),
+        }));
+    } catch (error: any) {
         console.error("Error fetching users: ", error);
-        throw new Error("Could not load the list of users.");
+        throw new Error(error.message || "Could not load the list of users.");
     }
 }
 

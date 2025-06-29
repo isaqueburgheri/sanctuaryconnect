@@ -1,6 +1,15 @@
 'use server';
 import { NextRequest, NextResponse } from 'next/server';
-import { adminAuth, adminDb } from '@/lib/firebase-admin';
+import * as admin from 'firebase-admin';
+
+// Self-contained initialization to ensure robustness in a serverless environment
+if (!admin.apps.length) {
+  try {
+    admin.initializeApp();
+  } catch (error: any) {
+    console.error('Firebase Admin initialization error', error.stack);
+  }
+}
 
 export async function PUT(req: NextRequest, { params }: { params: { uid: string } }) {
   try {
@@ -11,13 +20,13 @@ export async function PUT(req: NextRequest, { params }: { params: { uid: string 
 
     let decodedToken;
     try {
-        decodedToken = await adminAuth.verifyIdToken(idToken);
+      decodedToken = await admin.auth().verifyIdToken(idToken);
     } catch (error) {
-        return NextResponse.json({ error: 'Authentication token is invalid or expired.' }, { status: 401 });
+      return NextResponse.json({ error: 'Authentication token is invalid or expired.' }, { status: 401 });
     }
     
     const callingUid = decodedToken.uid;
-    const userDoc = await adminDb.collection('users').doc(callingUid).get();
+    const userDoc = await admin.firestore().collection('users').doc(callingUid).get();
     if (!userDoc.exists() || userDoc.data()?.role !== 'Admin') {
       return NextResponse.json({ error: 'Permission denied. Only administrators can change passwords.' }, { status: 403 });
     }
@@ -32,7 +41,7 @@ export async function PUT(req: NextRequest, { params }: { params: { uid: string 
       return NextResponse.json({ error: 'A new password with at least 6 characters is required.' }, { status: 400 });
     }
     
-    await adminAuth.updateUser(targetUid, {
+    await admin.auth().updateUser(targetUid, {
       password: newPassword,
     });
     

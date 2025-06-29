@@ -1,7 +1,46 @@
 'use server';
 import { NextRequest, NextResponse } from 'next/server';
-import { adminAuth, adminDb, adminFirestore } from '@/lib/firebase-admin';
+import * as admin from 'firebase-admin';
 
+// Self-contained initialization to ensure robustness in a serverless environment
+if (!admin.apps.length) {
+  try {
+    admin.initializeApp();
+  } catch (error: any) {
+    console.error('Firebase Admin initialization error', error.stack);
+  }
+}
+
+// GET method to list all users from the Firestore 'users' collection
+export async function GET(req: NextRequest) {
+    try {
+        const idToken = req.headers.get('Authorization')?.split('Bearer ')[1];
+        if (!idToken) {
+            return NextResponse.json({ error: 'Authentication token is missing.' }, { status: 401 });
+        }
+        await admin.auth().verifyIdToken(idToken);
+
+        const usersSnapshot = await admin.firestore().collection('users').orderBy('createdAt', 'desc').get();
+        const users = usersSnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                email: data.email,
+                role: data.role,
+                createdAt: data.createdAt.toDate().toISOString()
+            };
+        });
+
+        return NextResponse.json(users, { status: 200 });
+
+    } catch (error: any) {
+        console.error('API Error listing users:', error);
+        return NextResponse.json({ error: error.message || 'An internal server error occurred while listing users.' }, { status: 500 });
+    }
+}
+
+
+// POST method to create a new user
 export async function POST(req: NextRequest) {
   try {
     const idToken = req.headers.get('Authorization')?.split('Bearer ')[1];
@@ -11,12 +50,12 @@ export async function POST(req: NextRequest) {
     
     let decodedToken;
     try {
-        decodedToken = await adminAuth.verifyIdToken(idToken);
+        decodedToken = await admin.auth().verifyIdToken(idToken);
     } catch (error) {
         return NextResponse.json({ error: 'Authentication token is invalid or expired.' }, { status: 401 });
     }
     
-    const userDocCheck = await adminDb.collection('users').doc(decodedToken.uid).get();
+    const userDocCheck = await admin.firestore().collection('users').doc(decodedToken.uid).get();
     if (!userDocCheck.exists() || userDocCheck.data()?.role !== 'Admin') {
       return NextResponse.json({ error: 'Permission denied. Only administrators can create users.' }, { status: 403 });
     }
@@ -26,7 +65,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Email and a password of at least 6 characters are required.' }, { status: 400 });
     }
 
-    const userRecord = await adminAuth.createUser({
+    const userRecord = await admin.auth().createUser({
       email,
       password,
     });
@@ -34,9 +73,9 @@ export async function POST(req: NextRequest) {
     const newUserDoc = {
       email: userRecord.email!,
       role: 'Recepção',
-      createdAt: adminFirestore.Timestamp.now(),
+      createdAt: admin.firestore.Timestamp.now(),
     };
-    await adminDb.collection('users').doc(userRecord.uid).set(newUserDoc);
+    await admin.firestore().collection('users').doc(userRecord.uid).set(newUserDoc);
 
     const newUser = {
         id: userRecord.uid,
