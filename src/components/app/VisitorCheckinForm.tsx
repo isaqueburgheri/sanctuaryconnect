@@ -31,6 +31,7 @@ const formSchema = z.object({
   isBeliever: z.enum(["sim", "nao"], {
     required_error: "Por favor, selecione uma opção.",
   }),
+  churchName: z.string().optional(),
   contact: z.string().optional(),
   wantsVisit: z.boolean().default(false).optional(),
 });
@@ -41,10 +42,13 @@ export default function VisitorCheckinForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
+      churchName: "",
       contact: "",
       wantsVisit: false,
     },
   });
+
+  const isBeliever = form.watch("isBeliever");
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
@@ -115,6 +119,22 @@ export default function VisitorCheckinForm() {
                 </FormItem>
               )}
             />
+
+            {isBeliever === "sim" && (
+                <FormField
+                  control={form.control}
+                  name="churchName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Qual igreja?</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Nome da sua igreja" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+            )}
             
             <FormField
               control={form.control}
