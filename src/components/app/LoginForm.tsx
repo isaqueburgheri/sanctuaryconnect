@@ -26,6 +26,9 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/lib/firebase";
+import { getUserRole } from "@/services/userService";
 
 const formSchema = z.object({
   email: z.string().email("Por favor, insira um email válido."),
@@ -45,38 +48,42 @@ export default function LoginForm() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
+      const user = userCredential.user;
 
-    // Simulating authentication
-    setTimeout(() => {
-      if (
-        values.email.toLowerCase() === "recepcao@adbelem.com" &&
-        values.password === "123456"
-      ) {
-        toast({
-          title: "Login bem-sucedido!",
-          description: "Bem-vindo(a), recepcionista.",
-        });
-        router.push("/reception/dashboard");
-      } else if (
-        values.email.toLowerCase() === "admin@adbelem.com" &&
-        values.password === "123456"
-      ) {
-        toast({
-          title: "Login bem-sucedido!",
-          description: "Bem-vindo(a), administrador.",
-        });
-        router.push("/admin/dashboard");
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Erro de Login",
-          description: "Email ou senha inválidos. Tente novamente.",
-        });
-        setIsLoading(false);
+      if (user) {
+        const role = await getUserRole(user.uid);
+        if (role === 'Admin') {
+            toast({
+                title: "Login bem-sucedido!",
+                description: "Bem-vindo(a), administrador.",
+            });
+            router.push("/admin/dashboard");
+        } else if (role === 'Recepção') {
+            toast({
+                title: "Login bem-sucedido!",
+                description: "Bem-vindo(a), recepcionista.",
+            });
+            router.push("/reception/dashboard");
+        } else {
+            // Se não tiver role, desloga e mostra erro.
+            await auth.signOut();
+            throw new Error("Usuário não possui uma função definida.");
+        }
       }
-    }, 1000);
+
+    } catch (error) {
+       toast({
+        variant: "destructive",
+        title: "Erro de Login",
+        description: "Email ou senha inválidos, ou usuário sem permissão.",
+      });
+    } finally {
+        setIsLoading(false);
+    }
   }
 
   return (
@@ -143,9 +150,6 @@ export default function LoginForm() {
           </Form>
         </CardContent>
       </Card>
-      <p className="text-xs text-muted-foreground">
-        Teste com: recepcao@adbelem.com ou admin@adbelem.com (senha: 123456)
-      </p>
     </div>
   );
 }

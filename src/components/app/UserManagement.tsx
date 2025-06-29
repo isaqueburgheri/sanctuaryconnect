@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -31,73 +31,99 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { UserPlus, MoreHorizontal, AlertTriangle } from "lucide-react";
+import { UserPlus, MoreHorizontal, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { User } from "@/types/user";
-
-// Mock data - In a real app, this would come from a database (e.g., Firebase Auth)
-const mockUsers: User[] = [
-  {
-    id: "1",
-    email: "recepcao@adbelem.com",
-    role: "Recepção",
-    createdAt: new Date("2023-01-15"),
-  },
-  {
-    id: "2",
-    email: "joao.silva@adbelem.com",
-    role: "Recepção",
-    createdAt: new Date("2023-03-22"),
-  },
-];
+import { createUser, getAllUsers, sendPasswordReset, deleteUserAccount } from "@/services/userService";
 
 export default function UserManagement() {
-  const [users, setUsers] = useState<User[]>(mockUsers);
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
 
-  const handleAddUser = (event: React.FormEvent<HTMLFormElement>) => {
+  useEffect(() => {
+    async function fetchUsers() {
+      setIsLoading(true);
+      try {
+        const userList = await getAllUsers();
+        setUsers(userList);
+      } catch (error) {
+        toast({ variant: 'destructive', title: 'Erro', description: 'Não foi possível carregar os usuários.' });
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchUsers();
+  }, [toast]);
+
+  const handleAddUser = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
     
-    // Basic validation
-    if (!email || !email.includes('@')) {
-        toast({ variant: 'destructive', title: 'Erro', description: 'Por favor, insira um e-mail válido.' });
+    if (!email || !password) {
+        toast({ variant: 'destructive', title: 'Erro', description: 'Por favor, preencha todos os campos.' });
+        return;
+    }
+    if (password.length < 6) {
+        toast({ variant: 'destructive', title: 'Erro', description: 'A senha deve ter pelo menos 6 caracteres.' });
         return;
     }
 
-    // In a real app, you would call a service to create the user in Firebase Auth.
-    // For now, we just show a toast and add to the local mock state.
-    const newUser: User = {
-      id: (users.length + 2).toString(),
-      email,
-      role: 'Recepção',
-      createdAt: new Date(),
-    };
-    setUsers(prev => [...prev, newUser]);
-
-    toast({
-      title: "Usuário Criado (Simulação)",
-      description: `Um convite de criação de senha seria enviado para ${email}.`,
-    });
-    setIsDialogOpen(false);
+    try {
+      const newUser = await createUser(email, password);
+      setUsers(prev => [...prev, newUser]);
+      toast({
+        title: "Usuário Criado!",
+        description: `O usuário ${email} foi criado com sucesso.`,
+      });
+      setIsDialogOpen(false);
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Ocorreu um erro desconhecido.";
+        toast({ variant: 'destructive', title: 'Erro ao Criar Usuário', description: errorMessage });
+    }
   };
+
+  const handlePasswordReset = async (email: string) => {
+    try {
+      await sendPasswordReset(email);
+      toast({ title: 'Sucesso', description: `Link de redefinição de senha enviado para ${email}.` });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Ocorreu um erro desconhecido.";
+      toast({ variant: 'destructive', title: 'Erro ao Enviar E-mail', description: errorMessage });
+    }
+  };
+  
+  const handleDeleteUser = async (id: string, email: string) => {
+     try {
+      await deleteUserAccount(id);
+      setUsers(prev => prev.filter(u => u.id !== id));
+      toast({ title: 'Sucesso', description: `Usuário ${email} foi excluído com sucesso.` });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Ocorreu um erro desconhecido.";
+      toast({ variant: 'destructive', title: 'Erro ao Excluir', description: errorMessage });
+    }
+  }
 
   return (
     <>
-      <Alert variant="default" className="mb-8 bg-accent/20 border-accent">
-        <AlertTriangle className="h-4 w-4 text-accent" />
-        <AlertTitle className="text-accent font-bold">Atenção, Administrador!</AlertTitle>
-        <AlertDescription>
-          Esta é uma interface de demonstração. As ações de adicionar, resetar senha e excluir usuários são simuladas. Para uma funcionalidade completa, é necessário integrar com um serviço de autenticação como o Firebase Authentication.
-        </AlertDescription>
-      </Alert>
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
@@ -119,7 +145,7 @@ export default function UserManagement() {
                     <DialogHeader>
                     <DialogTitle>Adicionar Novo Recepcionista</DialogTitle>
                     <DialogDescription>
-                        O novo usuário receberá um e-mail para definir sua senha.
+                        Crie uma conta para um novo membro da equipe.
                     </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
@@ -127,7 +153,13 @@ export default function UserManagement() {
                         <Label htmlFor="email" className="text-right">
                         Email
                         </Label>
-                        <Input id="email" name="email" type="email" className="col-span-3" placeholder="nome.sobrenome@adbelem.com" required />
+                        <Input id="email" name="email" type="email" className="col-span-3" placeholder="nome@adbelem.com" required />
+                    </div>
+                     <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="password" className="text-right">
+                        Senha
+                        </Label>
+                        <Input id="password" name="password" type="password" className="col-span-3" placeholder="Senha inicial" required />
                     </div>
                     </div>
                     <DialogFooter>
@@ -149,11 +181,20 @@ export default function UserManagement() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {users.map((user) => (
+              {isLoading ? (
+                 <TableRow>
+                    <TableCell colSpan={4} className="h-24 text-center">
+                      <div className="flex justify-center items-center">
+                        <Loader2 className="mr-2 h-6 w-6 animate-spin" />
+                        Carregando usuários...
+                      </div>
+                    </TableCell>
+                  </TableRow>
+              ) : users.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell className="font-medium">{user.email}</TableCell>
                   <TableCell>
-                    <Badge variant="secondary">{user.role}</Badge>
+                    <Badge variant={user.role === 'Admin' ? "default" : "secondary"}>{user.role}</Badge>
                   </TableCell>
                   <TableCell>
                     {user.createdAt.toLocaleDateString("pt-BR")}
@@ -161,18 +202,35 @@ export default function UserManagement() {
                   <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
+                        <Button variant="ghost" className="h-8 w-8 p-0" disabled={user.role === 'Admin'}>
                           <span className="sr-only">Abrir menu</span>
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onSelect={() => toast({ title: "Simulado", description: `Link de reset de senha enviado para ${user.email}`})}>
+                        <DropdownMenuItem onSelect={() => handlePasswordReset(user.email)}>
                           Resetar Senha
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10" onSelect={() => toast({ title: "Simulado", description: `Usuário ${user.email} foi excluído.`})}>
-                          Excluir
-                        </DropdownMenuItem>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive focus:bg-destructive/10">Excluir</DropdownMenuItem>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Excluir {user.email}?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Esta ação não pode ser desfeita. Isso excluirá permanentemente a conta do usuário.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction className="bg-destructive hover:bg-destructive/90" onClick={() => handleDeleteUser(user.id, user.email)}>
+                                Excluir
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
