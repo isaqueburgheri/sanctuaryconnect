@@ -1,52 +1,85 @@
-import { auth, db } from "@/lib/firebase";
-import type { User } from "@/types/user";
-import { doc, getDoc, collection, getDocs, query, orderBy } from "firebase/firestore";
+import {db} from '@/lib/firebase';
+import type {User, CreateUserInput} from '@/types/user';
+import {
+  doc,
+  getDoc,
+  collection,
+  query,
+  onSnapshot,
+} from 'firebase/firestore';
 
-/**
- * Fetches all user documents from the 'users' collection in Firestore.
- * This is a client-side operation and does not require the Admin SDK.
- * It will only return users that have a corresponding document in Firestore.
- */
-export async function getAllUsers(): Promise<User[]> {
-    try {
-        const usersCollectionRef = collection(db, "users");
-        const q = query(usersCollectionRef); 
-        const querySnapshot = await getDocs(q);
+export async function createUser(userData: CreateUserInput) {
+  const response = await fetch('/api/users', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(userData),
+  });
 
-        const users: User[] = querySnapshot.docs.map(doc => {
-            const data = doc.data();
-            return {
-                id: doc.id,
-                role: data.role || "Unknown",
-                // Reads the email from the Firestore document.
-                email: data.email || `Usuário sem email (ID: ${doc.id})`,
-                createdAt: new Date(), // Placeholder
-                lastLogin: null, // Placeholder
-            };
-        });
+  const data = await response.json();
 
-        return users;
-    } catch (error: any) {
-        console.error("Error fetching users from Firestore: ", error);
-        throw new Error(error.message || "Could not load the list of users from Firestore.");
-    }
+  if (!response.ok) {
+    throw new Error(data.error || 'Failed to create user.');
+  }
+
+  return data;
 }
 
+export function listenToUsers(
+  onUsersUpdate: (users: User[]) => void,
+  onError: (error: Error) => void
+): () => void {
+  try {
+    const usersCollectionRef = collection(db, 'users');
+    const q = query(usersCollectionRef);
 
-export async function getUserRole(uid: string): Promise<'Admin' | 'Recepção' | null> {
-    try {
-        const userDocRef = doc(db, "users", uid);
-        const userDoc = await getDoc(userDocRef);
+    const unsubscribe = onSnapshot(
+      q,
+      querySnapshot => {
+        const users: User[] = querySnapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            email: data.email || `Email não encontrado (ID: ${doc.id})`,
+            role: data.role || 'Unknown',
+            createdAt: new Date(), // Placeholder
+            lastLogin: null, // Placeholder
+          };
+        });
+        users.sort((a, b) => (a.email || '').localeCompare(b.email || ''));
+        onUsersUpdate(users);
+      },
+      error => {
+        console.error('Error listening to users collection: ', error);
+        onError(new Error('Could not listen for user updates.'));
+      }
+    );
 
-        if (userDoc.exists()) {
-            const role = userDoc.data().role;
-            if (role === 'Admin' || role === 'Recepção') {
-                return role;
-            }
-        }
-        return null;
-    } catch (error) {
-        console.error("Error fetching user role:", error);
-        throw new Error("Failed to fetch user role from the database.");
+    return unsubscribe;
+  } catch (error: any) {
+    console.error('Error setting up user listener: ', error);
+    onError(new Error('Failed to set up user listener.'));
+    return () => {};
+  }
+}
+
+export async function getUserRole(
+  uid: string
+): Promise<'Admin' | 'Recepção' | null> {
+  try {
+    const userDocRef = doc(db, 'users', uid);
+    const userDoc = await getDoc(userDocRef);
+
+    if (userDoc.exists()) {
+      const role = userDoc.data().role;
+      if (role === 'Admin' || role === 'Recepção') {
+        return role;
+      }
     }
+    return null;
+  } catch (error) {
+    console.error('Error fetching user role:', error);
+    throw new Error('Failed to fetch user role from the database.');
+  }
 }
