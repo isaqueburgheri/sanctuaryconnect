@@ -213,16 +213,16 @@ export default function UserList() {
                       <FormItem>
                         <FormLabel>Cargo</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecione o cargo" />
-                            </Trigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="Admin">Admin</SelectItem>
-                            <SelectItem value="Recepção">Recepção</SelectItem>
-                          </SelectContent>
-                        </Select>
+  <FormControl>
+    <SelectTrigger>
+      <SelectValue placeholder="Selecione o cargo" />
+    </SelectTrigger>
+  </FormControl>
+  <SelectContent>
+    <SelectItem value="Admin">Admin</SelectItem>
+    <SelectItem value="Recepção">Recepção</SelectItem>
+  </SelectContent>
+</Select>
                          <FormMessage />
                       </FormItem>
                     )}

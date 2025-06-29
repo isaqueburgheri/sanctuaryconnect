@@ -44,14 +44,14 @@ export default function EventsCalendar() {
       <h2 className="text-4xl font-headline font-bold mb-6 text-center lg:text-left">
         Nossos Cultos
       </h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {events.map((event, index) => (
           <Card
             key={index}
             className="flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300"
           >
-            <CardHeader>
-              <CardTitle className="font-headline text-2xl">
+            <CardHeader className="p-4">
+              <CardTitle className="font-headline text-xl mb-1">
                 {event.title}
               </CardTitle>
               <Badge
@@ -65,17 +65,17 @@ export default function EventsCalendar() {
                 {event.category}
               </Badge>
             </CardHeader>
-            <CardContent className="flex-grow space-y-3">
-              <div className="flex items-center gap-3 text-muted-foreground">
-                <Calendar className="h-5 w-5 text-primary" />
+            <CardContent className="flex-grow space-y-2 p-4 pt-0 text-sm">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Calendar className="h-4 w-4 text-primary" />
                 <span>{event.date}</span>
               </div>
-              <div className="flex items-center gap-3 text-muted-foreground">
-                <Clock className="h-5 w-5 text-primary" />
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Clock className="h-4 w-4 text-primary" />
                 <span>{event.time}</span>
               </div>
-              <div className="flex items-center gap-3 text-muted-foreground">
-                <MapPin className="h-5 w-5 text-primary" />
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <MapPin className="h-4 w-4 text-primary" />
                 <span>{event.location}</span>
               </div>
             </CardContent>
