@@ -3,7 +3,8 @@ import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
 // As credenciais do seu projeto Firebase devem ser configuradas no arquivo .env.local
-const firebaseConfig = {
+// Esta configuração é exportada para ser usada na criação de usuários no lado do cliente.
+export const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,

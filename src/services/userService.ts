@@ -1,38 +1,73 @@
-import {db} from '@/lib/firebase';
+import {db, firebaseConfig} from '@/lib/firebase';
 import type {User, CreateUserInput} from '@/types/user';
 import {
   doc,
   getDoc,
+  setDoc,
   collection,
   query,
   onSnapshot,
   orderBy,
 } from 'firebase/firestore';
+import {initializeApp, deleteApp} from 'firebase/app';
+import {getAuth, createUserWithEmailAndPassword} from 'firebase/auth';
 
 /**
- * Creates a new user by calling the backend API.
- * This function is responsible for creating both the Auth record and the Firestore document.
+ * Creates a new user directly from the client-side.
+ * This approach bypasses the server-side API to avoid environment credential issues.
  * @param userData The user data including email, password, and role.
- * @returns The response from the API.
- * @throws An error if the API call fails.
+ * @returns The new user's UID.
+ * @throws An error if the creation fails.
  */
 export async function createUser(userData: CreateUserInput) {
-  const response = await fetch('/api/users', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(userData),
-  });
+  // A temporary, secondary Firebase app is used to create a new user.
+  // This prevents the currently signed-in admin from being signed out.
+  const tempAppName = `temp-app-for-${Date.now()}`;
+  const tempApp = initializeApp(firebaseConfig, tempAppName);
+  const tempAuth = getAuth(tempApp);
 
-  const data = await response.json();
+  try {
+    // 1. Create the user in Firebase Authentication using the temporary app
+    const userCredential = await createUserWithEmailAndPassword(
+      tempAuth,
+      userData.email,
+      userData.password
+    );
+    const newUser = userCredential.user;
 
-  if (!response.ok) {
-    // The API should return a JSON object with an 'error' key.
-    throw new Error(data.error || 'Failed to create user.');
+    // 2. Create the user document in Firestore with their role.
+    // This uses the primary `db` instance, which is authenticated as the admin.
+    const userDocRef = doc(db, 'users', newUser.uid);
+    await setDoc(userDocRef, {
+      email: userData.email,
+      role: userData.role,
+    });
+
+    return {uid: newUser.uid};
+  } catch (error: any) {
+    let errorMessage = 'Ocorreu um erro desconhecido ao criar o usuário.';
+    if (error.code) {
+      switch (error.code) {
+        case 'auth/email-already-in-use':
+          errorMessage = 'Este email já está em uso por outro usuário.';
+          break;
+        case 'auth/invalid-email':
+          errorMessage = 'O formato do email fornecido é inválido.';
+          break;
+        case 'auth/weak-password':
+          errorMessage =
+            'A senha é muito fraca. Ela deve ter pelo menos 6 caracteres.';
+          break;
+        default:
+          errorMessage = `Ocorreu um erro no servidor (${error.code}).`;
+          break;
+      }
+    }
+    throw new Error(errorMessage);
+  } finally {
+    // 3. Clean up and delete the temporary app instance
+    await deleteApp(tempApp);
   }
-
-  return data;
 }
 
 /**
