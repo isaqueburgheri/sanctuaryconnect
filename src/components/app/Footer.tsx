@@ -19,13 +19,17 @@ export default function Footer() {
           </p>
         </div>
         <div className="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-6 mb-4 text-sm">
-          <div className="flex items-center gap-2">
+          <Link
+            href="https://www.google.com/maps/dir/?api=1&destination=R.%20Wilson%20Fernando%20S%C3%A3o%20Carvalho%2C%2040%20-%20Conj.%20Hab.%20Sitio%20Conceicao%2C%20S%C3%A3o%20Paulo%20-%20SP%2C%2008473-000"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 hover:text-primary transition-colors"
+          >
             <MapPin className="h-4 w-4" />
             <span>
-              R. Wilson Fernando São Carvalho, 40 - Conj. Hab. Sitio Conceicao,
-              São Paulo - SP, 08473-000
+              R. Wilson Fernando São Carvalho, 40
             </span>
-          </div>
+          </Link>
           <Link
             href="https://www.facebook.com/adbelemcidadetiradentes63/?locale=pt_BR"
             target="_blank"
