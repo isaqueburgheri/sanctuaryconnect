@@ -32,7 +32,10 @@ const formSchema = z.object({
     required_error: "Por favor, selecione uma opção.",
   }),
   churchName: z.string().optional(),
-  contact: z.string().optional(),
+  contact: z
+    .string()
+    .regex(/^\d*$/, "Por favor, insira apenas números.")
+    .optional(),
   wantsVisit: z.boolean().default(false).optional(),
 });
 
@@ -143,7 +146,16 @@ export default function VisitorCheckinForm() {
                 <FormItem>
                   <FormLabel>Deixe seu WhatsApp (Opcional)</FormLabel>
                   <FormControl>
-                    <Input placeholder="(11) 99999-9999" {...field} />
+                    <Input
+                      placeholder="(11) 99999-9999"
+                      type="tel"
+                      {...field}
+                      onChange={(e) => {
+                        const { value } = e.target;
+                        const numericValue = value.replace(/\D/g, "");
+                        field.onChange(numericValue);
+                      }}
+                    />
                   </FormControl>
                   <FormDescription>
                     Gostaríamos de manter contato com você.
