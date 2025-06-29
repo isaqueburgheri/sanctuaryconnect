@@ -1,17 +1,14 @@
-import UserList from "@/components/app/UserList";
-
 export default function UserManagementPage() {
   return (
-    <div className="container mx-auto px-4 py-8 md:py-12">
-        <section className="text-center mb-12 md:mb-16">
+    <div className="container mx-auto flex h-full flex-col items-center justify-center px-4 py-8 md:py-12">
+      <div className="text-center">
         <h2 className="text-4xl md:text-5xl font-extrabold font-headline text-primary tracking-tight">
-          Gerenciamento de Usuários
+          Página Removida
         </h2>
         <p className="mt-4 max-w-3xl mx-auto text-lg text-muted-foreground">
-          Lista de todos os usuários com acesso ao sistema.
+          A funcionalidade de gerenciamento de usuários foi desativada.
         </p>
-      </section>
-      <UserList />
+      </div>
     </div>
   );
 }

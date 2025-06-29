@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { LogOut, Users, LayoutDashboard, BarChart3, UserCog } from "lucide-react";
+import { LogOut, Users, BarChart3 } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 export default function AdminHeader() {
@@ -12,7 +12,6 @@ export default function AdminHeader() {
   const getTitle = () => {
     if (pathname.startsWith("/dashboard")) return "Dashboard Geral";
     if (pathname.startsWith("/visitors")) return "Gerenciar Visitantes";
-    if (pathname.startsWith("/users")) return "Gerenciar Usuários";
     return "Painel Administrativo";
   };
 
@@ -53,15 +52,6 @@ export default function AdminHeader() {
             <Link href="/visitors">
               <Users />
               Visitantes
-            </Link>
-          </Button>
-           <Button
-            variant={pathname.startsWith("/users") ? "secondary" : "ghost"}
-            size="sm" asChild
-          >
-            <Link href="/users">
-              <UserCog />
-              Usuários
             </Link>
           </Button>
           <Button variant="outline" size="sm" asChild>
