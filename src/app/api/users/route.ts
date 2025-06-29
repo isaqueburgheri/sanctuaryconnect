@@ -1,19 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import * as admin from 'firebase-admin';
 
-// Helper to initialize Firebase Admin SDK
+// Helper to initialize Firebase Admin SDK.
+// It ensures that initialization happens only once.
 function ensureFirebaseAdminInitialized() {
-  if (admin.apps.length === 0) {
-    try {
-      admin.initializeApp({
-        // This is crucial to fix the 'aud' claim error.
-        // It tells the Admin SDK which project it belongs to.
-        projectId: 'sanctuaryconnect',
-      });
-    } catch (error: any) {
-      console.error('Firebase Admin initialization error:', error.stack);
-    }
+  // Check if the default app is already initialized
+  if (admin.apps.length > 0 && admin.apps[0]) {
+    return admin;
   }
+  
+  try {
+    // On Google Cloud infrastructure (like App Hosting), initializeApp()
+    // automatically discovers the project configuration and credentials from the environment.
+    admin.initializeApp();
+  } catch (error: any) {
+    console.error('Firebase Admin initialization error:', error);
+    // Throw a clearer error to be caught by the route handler
+    throw new Error('Firebase Admin SDK initialization failed: ' + error.message);
+  }
+  
   return admin;
 }
 
@@ -22,13 +27,12 @@ export async function GET(req: NextRequest) {
     try {
         const admin = ensureFirebaseAdminInitialized();
         
-        // No ID token verification for now for simplicity, as the page is admin-only.
-        
         // 1. Get all users from Firebase Auth
         const authUsersList = await admin.auth().listUsers(100);
         
         // 2. Get all user role documents from Firestore
-        const firestoreUsersSnapshot = await admin.firestore().collection('users').get();
+        const firestore = admin.firestore();
+        const firestoreUsersSnapshot = await firestore.collection('users').get();
         const rolesMap = new Map<string, 'Admin' | 'Recepção'>();
         firestoreUsersSnapshot.forEach(doc => {
             rolesMap.set(doc.id, doc.data().role);
@@ -50,6 +54,8 @@ export async function GET(req: NextRequest) {
 
     } catch (error: any) {
         console.error('API Error listing users:', error);
-        return NextResponse.json({ error: error.message || 'An internal server error occurred while listing users.' }, { status: 500 });
+        // Ensure a clear error message is sent back to the client
+        const errorMessage = error.message || 'An internal server error occurred while listing users.';
+        return NextResponse.json({ error: errorMessage }, { status: 500 });
     }
 }
