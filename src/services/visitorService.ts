@@ -7,6 +7,8 @@ import {
   where,
   Timestamp,
   orderBy,
+  doc,
+  deleteDoc,
 } from "firebase/firestore";
 import type { Visitor, VisitorDocument, VisitorInput } from "@/types/visitor";
 
@@ -66,11 +68,20 @@ export async function getTodaysVisitors(): Promise<Visitor[]> {
     });
   } catch (error) {
     console.error("Erro ao buscar os visitantes de hoje: ", error);
-    // Firestore pode sugerir um índice aqui. O erro no console do navegador guiará o usuário.
     if (error instanceof Error && error.message.includes("indexes")) {
          console.error("É necessário criar um índice no Firestore. Verifique o link no erro do console para criá-lo automaticamente.");
          throw new Error("Índice do Firestore ausente. Verifique o console para mais detalhes.");
     }
     throw new Error("Não foi possível buscar os visitantes de hoje.");
+  }
+}
+
+export async function deleteVisitor(id: string): Promise<void> {
+  try {
+    const visitorDoc = doc(db, "visitors", id);
+    await deleteDoc(visitorDoc);
+  } catch (error) {
+    console.error("Erro ao excluir visitante: ", error);
+    throw new Error("Não foi possível excluir o visitante.");
   }
 }

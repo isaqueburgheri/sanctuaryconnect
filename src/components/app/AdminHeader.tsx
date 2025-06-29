@@ -3,20 +3,17 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { LogOut, Users, LayoutDashboard } from "lucide-react";
+import { LogOut, Users, LayoutDashboard, BarChart3, UserCog } from "lucide-react";
 import { usePathname } from "next/navigation";
 
-export default function AuthenticatedHeader() {
+export default function AdminHeader() {
   const pathname = usePathname();
 
   const getTitle = () => {
-    if (pathname.startsWith("/admin")) {
-      return "Lista de Visitantes";
-    }
-    if (pathname.startsWith("/dashboard")) {
-      return "Painel da Recepção";
-    }
-    return "Painel";
+    if (pathname.startsWith("/admin/visitors")) return "Gerenciar Visitantes";
+    if (pathname.startsWith("/admin/dashboard")) return "Dashboard Geral";
+    if (pathname.startsWith("/admin/users")) return "Gerenciar Usuários";
+    return "Painel Administrativo";
   };
 
   return (
@@ -34,30 +31,37 @@ export default function AuthenticatedHeader() {
             <h1 className="text-lg md:text-xl font-headline font-bold text-foreground leading-tight">
               AD Belém - Setor 63
             </h1>
-            <p className="text-sm text-muted-foreground leading-tight">
+            <p className="text-sm text-muted-foreground uppercase tracking-wider font-semibold">
               {getTitle()}
             </p>
           </div>
         </div>
         <nav className="flex items-center gap-2">
           <Button
-            variant={pathname.startsWith("/dashboard") ? "secondary" : "ghost"}
-            size="sm"
-            asChild
+            variant={pathname.startsWith("/admin/dashboard") ? "secondary" : "ghost"}
+            size="sm" asChild
           >
-            <Link href="/dashboard">
-              <LayoutDashboard />
-              Recepção
+            <Link href="/admin/dashboard">
+              <BarChart3 />
+              Dashboard
             </Link>
           </Button>
           <Button
-            variant={pathname.startsWith("/admin") ? "secondary" : "ghost"}
-            size="sm"
-            asChild
+            variant={pathname.startsWith("/admin/visitors") ? "secondary" : "ghost"}
+            size="sm" asChild
           >
-            <Link href="/admin">
+            <Link href="/admin/visitors">
               <Users />
               Visitantes
+            </Link>
+          </Button>
+           <Button
+            variant={pathname.startsWith("/admin/users") ? "secondary" : "ghost"}
+            size="sm" asChild
+          >
+            <Link href="/admin/users">
+              <UserCog />
+              Usuários
             </Link>
           </Button>
           <Button variant="outline" size="sm" asChild>

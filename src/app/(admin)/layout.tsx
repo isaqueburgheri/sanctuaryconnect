@@ -1,20 +1,20 @@
 import type { Metadata } from "next";
-import AuthenticatedHeader from "@/components/app/AuthenticatedHeader";
+import AdminHeader from "@/components/app/AdminHeader";
 import Footer from "@/components/app/Footer";
 
 export const metadata: Metadata = {
-  title: "Painel - AD Belém - Setor 63",
-  description: "Painel de administração e recepção.",
+  title: "Administração - AD Belém - Setor 63",
+  description: "Painel administrativo.",
 };
 
-export default function AuthenticatedLayout({
+export default function AdminLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
     <div className="flex flex-col min-h-screen bg-background font-body text-foreground">
-      <AuthenticatedHeader />
+      <AdminHeader />
       <main className="flex-grow">{children}</main>
       <Footer />
     </div>

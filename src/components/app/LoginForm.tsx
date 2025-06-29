@@ -58,7 +58,7 @@ export default function LoginForm() {
           title: "Login bem-sucedido!",
           description: "Bem-vindo(a), recepcionista.",
         });
-        router.push("/dashboard");
+        router.push("/reception/dashboard");
       } else if (
         values.email.toLowerCase() === "admin@adbelem.com" &&
         values.password === "123456"
@@ -67,7 +67,7 @@ export default function LoginForm() {
           title: "Login bem-sucedido!",
           description: "Bem-vindo(a), administrador.",
         });
-        router.push("/admin");
+        router.push("/admin/dashboard");
       } else {
         toast({
           variant: "destructive",

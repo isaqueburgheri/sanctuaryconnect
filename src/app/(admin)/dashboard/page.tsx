@@ -1,20 +1,17 @@
-import VisitorCheckinForm from "@/components/app/VisitorCheckinForm";
+import AdminDashboard from "@/components/app/AdminDashboard";
 
-export default function DashboardPage() {
+export default function AdminDashboardPage() {
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
       <section className="text-center mb-12 md:mb-16">
         <h2 className="text-4xl md:text-5xl font-extrabold font-headline text-primary tracking-tight">
-          Painel da Recepção
+          Dashboard Administrativo
         </h2>
         <p className="mt-4 max-w-3xl mx-auto text-lg text-muted-foreground">
-          Use o formulário abaixo para registrar novos visitantes.
+          Visão geral dos dados da igreja.
         </p>
       </section>
-
-      <div className="max-w-3xl mx-auto">
-        <VisitorCheckinForm />
-      </div>
+      <AdminDashboard />
     </div>
   );
 }

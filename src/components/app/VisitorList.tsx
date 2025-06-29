@@ -18,14 +18,29 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Users, CalendarDays, Filter, Loader2 } from "lucide-react";
-import { getVisitors, getTodaysVisitors } from "@/services/visitorService";
+import { Users, CalendarDays, Filter, Loader2, Trash2 } from "lucide-react";
+import { getVisitors, getTodaysVisitors, deleteVisitor } from "@/services/visitorService";
 import type { Visitor } from "@/types/visitor";
 import { useToast } from "@/hooks/use-toast";
 
-export default function VisitorList() {
+interface VisitorListProps {
+  isAdmin?: boolean;
+}
+
+export default function VisitorList({ isAdmin = false }: VisitorListProps) {
   const [visitors, setVisitors] = useState<Visitor[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showOnlyToday, setShowOnlyToday] = useState(true);
@@ -53,6 +68,23 @@ export default function VisitorList() {
   useEffect(() => {
     fetchVisitors();
   }, [fetchVisitors]);
+  
+  const handleDeleteVisitor = async (id: string) => {
+    try {
+      await deleteVisitor(id);
+      setVisitors(prev => prev.filter(v => v.id !== id));
+      toast({
+        title: "Sucesso!",
+        description: "Visitante excluído com sucesso.",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Erro ao Excluir",
+        description: error instanceof Error ? error.message : "Ocorreu um erro desconhecido.",
+      });
+    }
+  };
 
   const toggleFilter = () => {
     setShowOnlyToday(prev => !prev);
@@ -69,7 +101,7 @@ export default function VisitorList() {
                 Lista de Visitantes
               </CardTitle>
               <CardDescription>
-                Use esta lista para as boas-vindas.
+                {isAdmin ? "Gerencie os registros de visitantes." : "Use esta lista para as boas-vindas."}
               </CardDescription>
             </div>
           </div>
@@ -94,12 +126,13 @@ export default function VisitorList() {
               <TableHead>Igreja</TableHead>
               <TableHead>Aceita Visita?</TableHead>
               <TableHead>Contato</TableHead>
+              {isAdmin && <TableHead>Ações</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center h-24">
+                <TableCell colSpan={isAdmin ? 7 : 6} className="text-center h-24">
                   <div className="flex justify-center items-center gap-2">
                     <Loader2 className="h-5 w-5 animate-spin" />
                     <span>Carregando visitantes...</span>
@@ -129,11 +162,36 @@ export default function VisitorList() {
                     </Badge>
                   </TableCell>
                   <TableCell>{visitor.contact || "Não informado"}</TableCell>
+                   {isAdmin && (
+                    <TableCell>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                           <Button variant="destructive" size="icon">
+                              <Trash2 className="h-4 w-4" />
+                           </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Esta ação não pode ser desfeita. Isso excluirá permanentemente o registro do visitante.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleDeleteVisitor(visitor.id)}>
+                              Excluir
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={6} className="text-center h-24">
+                <TableCell colSpan={isAdmin ? 7 : 6} className="text-center h-24">
                   {showOnlyToday
                     ? "Nenhum visitante registrado hoje."
                     : "Nenhum visitante registrado."}
