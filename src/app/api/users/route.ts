@@ -1,14 +1,34 @@
 'use server';
 import { NextRequest, NextResponse } from 'next/server';
-import { adminAuth, adminDb, adminFirestore } from '@/lib/firebase-admin';
+import * as admin from 'firebase-admin';
+
+// Self-contained Firebase Admin initialization
+try {
+  if (!admin.apps.length) {
+    admin.initializeApp();
+  }
+} catch (error: any) {
+  console.error('Firebase Admin initialization error', error);
+}
 
 export async function POST(req: NextRequest) {
   try {
+    const adminAuth = admin.auth();
+    const adminDb = admin.firestore();
+    const adminFirestore = admin.firestore;
+
     const idToken = req.headers.get('Authorization')?.split('Bearer ')[1];
     if (!idToken) {
       return NextResponse.json({ error: 'Authentication token is missing.' }, { status: 401 });
     }
-    const decodedToken = await adminAuth.verifyIdToken(idToken);
+    
+    let decodedToken;
+    try {
+        decodedToken = await adminAuth.verifyIdToken(idToken);
+    } catch (error) {
+        return NextResponse.json({ error: 'Authentication token is invalid or expired.' }, { status: 401 });
+    }
+    
     const userDocCheck = await adminDb.collection('users').doc(decodedToken.uid).get();
     if (!userDocCheck.exists() || userDocCheck.data()?.role !== 'Admin') {
       return NextResponse.json({ error: 'Permission denied. Only administrators can create users.' }, { status: 403 });

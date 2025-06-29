@@ -1,14 +1,33 @@
 'use server';
 import { NextRequest, NextResponse } from 'next/server';
-import { adminAuth, adminDb } from '@/lib/firebase-admin';
+import * as admin from 'firebase-admin';
+
+// Self-contained Firebase Admin initialization
+try {
+  if (!admin.apps.length) {
+    admin.initializeApp();
+  }
+} catch (error: any) {
+  console.error('Firebase Admin initialization error', error);
+}
 
 export async function PUT(req: NextRequest, { params }: { params: { uid: string } }) {
   try {
+    const adminAuth = admin.auth();
+    const adminDb = admin.firestore();
+
     const idToken = req.headers.get('Authorization')?.split('Bearer ')[1];
     if (!idToken) {
       return NextResponse.json({ error: 'Authentication token is missing.' }, { status: 401 });
     }
-    const decodedToken = await adminAuth.verifyIdToken(idToken);
+
+    let decodedToken;
+    try {
+        decodedToken = await adminAuth.verifyIdToken(idToken);
+    } catch (error) {
+        return NextResponse.json({ error: 'Authentication token is invalid or expired.' }, { status: 401 });
+    }
+    
     const callingUid = decodedToken.uid;
     const userDoc = await adminDb.collection('users').doc(callingUid).get();
     if (!userDoc.exists() || userDoc.data()?.role !== 'Admin') {
@@ -35,9 +54,6 @@ export async function PUT(req: NextRequest, { params }: { params: { uid: string 
     console.error('API Error updating password:', error);
     if (error.code === 'auth/user-not-found') {
       return NextResponse.json({ error: 'The target user to update was not found.' }, { status: 404 });
-    }
-    if (error.code === 'auth/id-token-expired' || error.code === 'auth/argument-error') {
-      return NextResponse.json({ error: 'Authentication token is invalid or expired.' }, { status: 401 });
     }
     const errorMessage = error.message || 'An internal server error occurred.';
     return NextResponse.json({ error: errorMessage }, { status: 500 });
