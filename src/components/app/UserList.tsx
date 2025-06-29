@@ -140,7 +140,7 @@ export default function UserList() {
       await deleteUser(userId);
       toast({
         title: "Sucesso!",
-        description: "Usuário excluído com sucesso.",
+        description: "Acesso do usuário removido com sucesso.",
       });
     } catch (error) {
       toast({
@@ -216,7 +216,7 @@ export default function UserList() {
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Selecione o cargo" />
-                            </SelectTrigger>
+                            </Trigger>
                           </FormControl>
                           <SelectContent>
                             <SelectItem value="Admin">Admin</SelectItem>
@@ -277,7 +277,7 @@ export default function UserList() {
                     <TableCell className="text-right">
                        <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button variant="destructive" size="icon" disabled={isCurrentUser} title={isCurrentUser ? "Você não pode excluir sua própria conta" : "Excluir usuário"}>
+                          <Button variant="destructive" size="icon" disabled={isCurrentUser} title={isCurrentUser ? "Você não pode excluir sua própria conta" : "Remover acesso do usuário"}>
                               <Trash2 className="h-4 w-4" />
                           </Button>
                         </AlertDialogTrigger>
@@ -285,13 +285,13 @@ export default function UserList() {
                           <AlertDialogHeader>
                             <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
                             <AlertDialogDescription>
-                              Esta ação não pode ser desfeita. Isso excluirá permanentemente o usuário <span className="font-bold">{user.email}</span>.
+                              Esta ação removerá o acesso do usuário ao aplicativo, mas a conta de autenticação dele permanecerá no sistema. O usuário <span className="font-bold">{user.email}</span> não poderá mais fazer login.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancelar</AlertDialogCancel>
                             <AlertDialogAction onClick={() => handleDeleteUser(user.id)}>
-                              Excluir
+                              Remover Acesso
                             </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
