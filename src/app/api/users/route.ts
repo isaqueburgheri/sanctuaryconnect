@@ -5,7 +5,9 @@ import * as admin from 'firebase-admin';
 function ensureFirebaseAdminInitialized() {
   if (admin.apps.length === 0) {
     try {
-      admin.initializeApp();
+      admin.initializeApp({
+        projectId: 'sanctuaryconnect',
+      });
     } catch (error: any) {
       console.error('Firebase Admin initialization error:', error.stack);
       // This error will be caught by the calling function's try...catch
