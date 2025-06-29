@@ -10,9 +10,9 @@ export default function AdminHeader() {
   const pathname = usePathname();
 
   const getTitle = () => {
-    if (pathname.startsWith("/admin/visitors")) return "Gerenciar Visitantes";
-    if (pathname.startsWith("/admin/dashboard")) return "Dashboard Geral";
-    if (pathname.startsWith("/admin/users")) return "Gerenciar Usuários";
+    if (pathname.startsWith("/dashboard")) return "Dashboard Geral";
+    if (pathname.startsWith("/visitors")) return "Gerenciar Visitantes";
+    if (pathname.startsWith("/users")) return "Gerenciar Usuários";
     return "Painel Administrativo";
   };
 
@@ -38,28 +38,28 @@ export default function AdminHeader() {
         </div>
         <nav className="flex items-center gap-2">
           <Button
-            variant={pathname.startsWith("/admin/dashboard") ? "secondary" : "ghost"}
+            variant={pathname.startsWith("/dashboard") ? "secondary" : "ghost"}
             size="sm" asChild
           >
-            <Link href="/admin/dashboard">
+            <Link href="/dashboard">
               <BarChart3 />
               Dashboard
             </Link>
           </Button>
           <Button
-            variant={pathname.startsWith("/admin/visitors") ? "secondary" : "ghost"}
+            variant={pathname.startsWith("/visitors") ? "secondary" : "ghost"}
             size="sm" asChild
           >
-            <Link href="/admin/visitors">
+            <Link href="/visitors">
               <Users />
               Visitantes
             </Link>
           </Button>
            <Button
-            variant={pathname.startsWith("/admin/users") ? "secondary" : "ghost"}
+            variant={pathname.startsWith("/users") ? "secondary" : "ghost"}
             size="sm" asChild
           >
-            <Link href="/admin/users">
+            <Link href="/users">
               <UserCog />
               Usuários
             </Link>
