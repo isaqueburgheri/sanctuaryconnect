@@ -10,7 +10,6 @@ import { doc, getDoc, collection, getDocs, query, orderBy } from "firebase/fires
 export async function getAllUsers(): Promise<User[]> {
     try {
         const usersCollectionRef = collection(db, "users");
-        // We can't order by role easily without a composite index, so we'll sort client-side if needed.
         const q = query(usersCollectionRef); 
         const querySnapshot = await getDocs(q);
 
@@ -19,9 +18,8 @@ export async function getAllUsers(): Promise<User[]> {
             return {
                 id: doc.id,
                 role: data.role || "Unknown",
-                // The client-side SDK cannot access Auth-specific details like email,
-                // createdAt, or lastLogin for other users. We return placeholders.
-                email: `Usuário (${doc.id.substring(0, 5)}...)`,
+                // Reads the email from the Firestore document.
+                email: data.email || `Usuário sem email (ID: ${doc.id})`,
                 createdAt: new Date(), // Placeholder
                 lastLogin: null, // Placeholder
             };

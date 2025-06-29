@@ -73,15 +73,14 @@ export default function UserList() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Email / ID do Usuário</TableHead>
+              <TableHead>Email</TableHead>
               <TableHead>Cargo</TableHead>
-              <TableHead>Informações Adicionais</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={3} className="h-24 text-center">
+                <TableCell colSpan={2} className="h-24 text-center">
                   <div className="flex justify-center items-center">
                     <Loader2 className="mr-2 h-6 w-6 animate-spin" />
                     Carregando usuários...
@@ -90,23 +89,20 @@ export default function UserList() {
               </TableRow>
             ) : users.length === 0 ? (
                <TableRow>
-                  <TableCell colSpan={3} className="h-24 text-center">
+                  <TableCell colSpan={2} className="h-24 text-center">
                     Nenhum usuário encontrado. Faça login para ver a lista.
                   </TableCell>
                 </TableRow>
             ) : (
               users.map((user) => (
                 <TableRow key={user.id}>
-                  <TableCell className="font-medium">{user.email || user.id}</TableCell>
+                  <TableCell className="font-medium">{user.email}</TableCell>
                   <TableCell>
                     <Badge
                       variant={user.role === "Admin" ? "default" : user.role === "Recepção" ? "secondary" : "outline"}
                     >
                       {user.role}
                     </Badge>
-                  </TableCell>
-                   <TableCell>
-                    N/A
                   </TableCell>
                 </TableRow>
               ))
