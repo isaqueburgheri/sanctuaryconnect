@@ -71,15 +71,22 @@ export default function LoginForm() {
         } else {
             // Se não tiver role, desloga e mostra erro.
             await auth.signOut();
-            throw new Error("Usuário não possui uma função definida.");
+            throw new Error("Usuário autenticado, mas não possui permissão (função) no banco de dados. Fale com o administrador do sistema.");
         }
       }
 
-    } catch (error) {
+    } catch (error: any) {
+        let description = "Ocorreu um erro inesperado. Tente novamente.";
+        if (error.code === 'auth/invalid-credential') {
+            description = "Email ou senha inválidos. Por favor, verifique seus dados.";
+        } else if (error instanceof Error) {
+            description = error.message;
+        }
+
        toast({
         variant: "destructive",
         title: "Erro de Login",
-        description: "Email ou senha inválidos, ou usuário sem permissão.",
+        description: description,
       });
     } finally {
         setIsLoading(false);
