@@ -50,12 +50,15 @@ import { Badge } from "@/components/ui/badge";
 import { UserPlus, MoreHorizontal, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { User } from "@/types/user";
-import { createUser, getAllUsers, sendPasswordReset, deleteUserAccount } from "@/services/userService";
+import { createUser, getAllUsers, updateUserPassword, deleteUserAccount } from "@/services/userService";
 
 export default function UserManagement() {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [newPassword, setNewPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
@@ -100,7 +103,7 @@ export default function UserManagement() {
         title: "Usuário Criado!",
         description: `A conta para ${email} foi criada com sucesso.`,
       });
-      setIsDialogOpen(false);
+      setIsAddUserDialogOpen(false);
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Ocorreu um erro desconhecido.";
         toast({ variant: 'destructive', title: 'Erro ao Criar Usuário', description: errorMessage });
@@ -109,13 +112,26 @@ export default function UserManagement() {
     }
   };
 
-  const handlePasswordReset = async (email: string) => {
+  const handleOpenPasswordDialog = (user: User) => {
+    setSelectedUser(user);
+    setNewPassword("");
+    setIsPasswordDialogOpen(true);
+  };
+
+  const handlePasswordChange = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!selectedUser || !newPassword) return;
+
+    setIsSubmitting(true);
     try {
-      await sendPasswordReset(email);
-      toast({ title: 'Sucesso', description: `Link de redefinição de senha enviado para ${email}.` });
+      await updateUserPassword(selectedUser.id, newPassword);
+      toast({ title: 'Sucesso!', description: `Senha para ${selectedUser.email} alterada.` });
+      setIsPasswordDialogOpen(false);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Ocorreu um erro desconhecido.";
-      toast({ variant: 'destructive', title: 'Erro ao Enviar E-mail', description: errorMessage });
+       const errorMessage = error instanceof Error ? error.message : "Ocorreu um erro desconhecido.";
+       toast({ variant: 'destructive', title: 'Erro ao Alterar Senha', description: errorMessage });
+    } finally {
+      setIsSubmitting(false);
     }
   };
   
@@ -141,7 +157,7 @@ export default function UserManagement() {
                 Lista de usuários com acesso ao painel da recepção.
               </CardDescription>
             </div>
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <Dialog open={isAddUserDialogOpen} onOpenChange={setIsAddUserDialogOpen}>
               <DialogTrigger asChild>
                 <Button>
                   <UserPlus className="mr-2 h-4 w-4" />
@@ -219,8 +235,8 @@ export default function UserManagement() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onSelect={() => handlePasswordReset(user.email)}>
-                          Resetar Senha
+                        <DropdownMenuItem onSelect={() => handleOpenPasswordDialog(user)}>
+                          Alterar Senha
                         </DropdownMenuItem>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
@@ -241,7 +257,6 @@ export default function UserManagement() {
                             </AlertDialogFooter>
                           </AlertDialogContent>
                         </AlertDialog>
-
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -251,6 +266,42 @@ export default function UserManagement() {
           </Table>
         </CardContent>
       </Card>
+
+      <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <form onSubmit={handlePasswordChange}>
+            <DialogHeader>
+              <DialogTitle>Alterar Senha</DialogTitle>
+              <DialogDescription>
+                Digite a nova senha para o usuário <span className="font-semibold">{selectedUser?.email}</span>. A senha antiga será invalidada.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="new-password" className="text-right">
+                  Nova Senha
+                </Label>
+                <Input
+                  id="new-password"
+                  name="new-password"
+                  type="password"
+                  className="col-span-3"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                  minLength={6}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isSubmitting ? "Alterando..." : "Confirmar Nova Senha"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

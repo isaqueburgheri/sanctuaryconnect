@@ -1,10 +1,14 @@
-import { auth, db } from "@/lib/firebase";
+import { auth, db, app } from "@/lib/firebase";
 import {
   createUserWithEmailAndPassword,
-  sendPasswordResetEmail,
   // Para excluir um usuário, você precisaria de um backend (Firebase Functions)
   // por razões de segurança. Não implementaremos a exclusão de auth aqui.
 } from "firebase/auth";
+import {
+  getFunctions,
+  httpsCallable,
+  Functions,
+} from "firebase/functions";
 import {
   collection,
   doc,
@@ -89,13 +93,29 @@ export async function getAllUsers(): Promise<User[]> {
     }
 }
 
-// Função para enviar e-mail de redefinição de senha
-export async function sendPasswordReset(email: string): Promise<void> {
+let functions: Functions;
+function getFunctionsInstance() {
+  if (!functions) {
+    functions = getFunctions(app);
+  }
+  return functions;
+}
+
+// Função para chamar o backend para alterar a senha de um usuário
+export async function updateUserPassword(uid: string, newPassword: string): Promise<void> {
+  if (newPassword.length < 6) {
+    throw new Error('A nova senha deve ter pelo menos 6 caracteres.');
+  }
   try {
-    await sendPasswordResetEmail(auth, email);
-  } catch (error) {
-    console.error("Erro ao enviar e-mail de redefinição: ", error);
-    throw new Error("Não foi possível enviar o e-mail de redefinição.");
+    const functionsInstance = getFunctionsInstance();
+    const setUserPassword = httpsCallable(functionsInstance, 'setUserPassword');
+    await setUserPassword({ uid, password: newPassword });
+  } catch (error: any) {
+    console.error("Erro ao alterar senha:", error);
+    if (error.code === 'functions/permission-denied') {
+        throw new Error('Você não tem permissão para realizar esta ação.');
+    }
+    throw new Error(`Não foi possível alterar a senha. Detalhes: ${error.message}`);
   }
 }
 
