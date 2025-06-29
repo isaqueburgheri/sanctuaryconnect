@@ -55,13 +55,15 @@ export async function POST(request: Request) {
     let errorMessage = 'Ocorreu um erro desconhecido ao criar o usuário.';
     if (error.code) {
       switch (error.code) {
+        case 'app/invalid-credential':
+          errorMessage = 'Falha na autenticação do servidor (app/invalid-credential). A credencial usada pelo servidor é inválida. Verifique no console do Google Cloud se a Conta de Serviço do App Hosting está ativa e se suas chaves não foram revogadas.';
+          break;
         case 'auth/email-already-exists':
           errorMessage = 'Este email já está em uso por outro usuário.';
           break;
         case 'auth/invalid-password':
           errorMessage = 'A senha é inválida. Ela deve ter pelo menos 6 caracteres.';
           break;
-        // This is the most likely error given the context of App Hosting permissions
         case 'auth/internal-error':
         case 'permission-denied':
             errorMessage = 'O servidor não tem permissão para criar usuários. Verifique as permissões do IAM para a Conta de Serviço do App Hosting. Ela precisa do papel "Administrador do Firebase Authentication".';
