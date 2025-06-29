@@ -8,6 +8,7 @@ import {
   query,
   onSnapshot,
   orderBy,
+  deleteDoc,
 } from 'firebase/firestore';
 import {initializeApp, deleteApp} from 'firebase/app';
 import {getAuth, createUserWithEmailAndPassword} from 'firebase/auth';
@@ -67,6 +68,25 @@ export async function createUser(userData: CreateUserInput) {
   } finally {
     // 3. Clean up and delete the temporary app instance
     await deleteApp(tempApp);
+  }
+}
+
+/**
+ * Deletes a user's document from the Firestore 'users' collection.
+ * NOTE: This action does NOT delete the user from Firebase Authentication
+ * due to client-side SDK limitations. The user will be unable to log in
+ * to this app (as their role is gone) but their auth record will remain.
+ * @param uid The UID of the user to delete.
+ */
+export async function deleteUser(uid: string): Promise<void> {
+  // This approach is a workaround for not having a backend function.
+  // A full solution would use a Cloud Function to delete from Auth and Firestore.
+  try {
+    const userDocRef = doc(db, 'users', uid);
+    await deleteDoc(userDocRef);
+  } catch (error) {
+    console.error("Error deleting user from Firestore: ", error);
+    throw new Error("Failed to delete user record from the database.");
   }
 }
 

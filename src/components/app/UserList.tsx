@@ -27,6 +27,17 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
     Form,
     FormControl,
     FormField,
@@ -44,13 +55,15 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, PlusCircle, UserCog } from "lucide-react";
+import { Loader2, PlusCircle, UserCog, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { listenToUsers, createUser } from "@/services/userService";
+import { listenToUsers, createUser, deleteUser } from "@/services/userService";
 import type { User, CreateUserInput } from "@/types/user";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { auth } from "@/lib/firebase";
+import type { User as FirebaseUser } from "firebase/auth";
 
 const formSchema = z.object({
   email: z.string().email("Por favor, insira um email válido."),
@@ -63,6 +76,7 @@ export default function UserList() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -92,6 +106,13 @@ export default function UserList() {
 
     return () => unsubscribe();
   }, [toast]);
+  
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setCurrentUser(user);
+    });
+    return () => unsubscribe();
+  }, []);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
@@ -111,6 +132,22 @@ export default function UserList() {
       });
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  async function handleDeleteUser(userId: string) {
+    try {
+      await deleteUser(userId);
+      toast({
+        title: "Sucesso!",
+        description: "Usuário excluído com sucesso.",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Erro ao Excluir Usuário",
+        description: error instanceof Error ? error.message : "Ocorreu um erro desconhecido.",
+      });
     }
   }
 
@@ -213,12 +250,13 @@ export default function UserList() {
             <TableRow>
               <TableHead>Email do Usuário</TableHead>
               <TableHead>Cargo</TableHead>
+              <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={2} className="text-center h-24">
+                <TableCell colSpan={3} className="text-center h-24">
                    <div className="flex justify-center items-center gap-2">
                     <Loader2 className="h-5 w-5 animate-spin" />
                     <span>Carregando usuários...</span>
@@ -226,19 +264,45 @@ export default function UserList() {
                 </TableCell>
               </TableRow>
             ) : users.length > 0 ? (
-              users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell className="font-medium">{user.email || user.id}</TableCell>
-                  <TableCell>
-                    <Badge variant={user.role === 'Admin' ? 'default' : 'secondary'}>
-                      {user.role}
-                    </Badge>
-                  </TableCell>
-                </TableRow>
-              ))
+              users.map((user) => {
+                const isCurrentUser = currentUser?.uid === user.id;
+                return (
+                  <TableRow key={user.id}>
+                    <TableCell className="font-medium">{user.email || user.id}</TableCell>
+                    <TableCell>
+                      <Badge variant={user.role === 'Admin' ? 'default' : 'secondary'}>
+                        {user.role}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                       <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="destructive" size="icon" disabled={isCurrentUser} title={isCurrentUser ? "Você não pode excluir sua própria conta" : "Excluir usuário"}>
+                              <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Esta ação não pode ser desfeita. Isso excluirá permanentemente o usuário <span className="font-bold">{user.email}</span>.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleDeleteUser(user.id)}>
+                              Excluir
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </TableCell>
+                  </TableRow>
+                )
+              })
             ) : (
               <TableRow>
-                <TableCell colSpan={2} className="text-center h-24">
+                <TableCell colSpan={3} className="text-center h-24">
                   Nenhum usuário encontrado.
                 </TableCell>
               </TableRow>
