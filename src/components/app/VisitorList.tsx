@@ -30,11 +30,12 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Users, Filter, Loader2, Trash2, Info } from "lucide-react";
@@ -131,7 +132,6 @@ export default function VisitorList({ isAdmin = false }: VisitorListProps) {
         </div>
       </CardHeader>
       <CardContent>
-        <TooltipProvider>
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
@@ -180,16 +180,23 @@ export default function VisitorList({ isAdmin = false }: VisitorListProps) {
                     </TableCell>
                     <TableCell className="text-center">
                       {visitor.observations ? (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 cursor-default">
-                               <Info className="h-4 w-4 text-primary" />
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <Info className="h-4 w-4 text-primary" />
                             </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p className="max-w-[300px] break-words whitespace-pre-wrap">{visitor.observations}</p>
-                          </TooltipContent>
-                        </Tooltip>
+                          </DialogTrigger>
+                          <DialogContent className="sm:max-w-[425px]">
+                            <DialogHeader>
+                              <DialogTitle>Observações de {visitor.name}</DialogTitle>
+                            </DialogHeader>
+                            <div className="py-4">
+                              <p className="text-sm text-muted-foreground break-words whitespace-pre-wrap">
+                                {visitor.observations}
+                              </p>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
                       ) : (
                         "-"
                       )}
@@ -233,7 +240,6 @@ export default function VisitorList({ isAdmin = false }: VisitorListProps) {
             </TableBody>
           </Table>
           </div>
-        </TooltipProvider>
       </CardContent>
     </Card>
   );
