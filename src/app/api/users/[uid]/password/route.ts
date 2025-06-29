@@ -2,16 +2,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import * as admin from 'firebase-admin';
 
-// Self-contained Firebase Admin initialization
-try {
-  if (!admin.apps.length) {
-    admin.initializeApp();
-  }
-} catch (error: any) {
-  console.error('Firebase Admin initialization error', error);
-}
-
 export async function PUT(req: NextRequest, { params }: { params: { uid: string } }) {
+  if (!admin.apps.length) {
+    try {
+      admin.initializeApp();
+    } catch (initError: any) {
+      console.error('Firebase Admin initialization error:', initError);
+      return NextResponse.json({ error: 'Firebase Admin initialization error.' }, { status: 500 });
+    }
+  }
+  
   try {
     const adminAuth = admin.auth();
     const adminDb = admin.firestore();

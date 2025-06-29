@@ -2,16 +2,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import * as admin from 'firebase-admin';
 
-// Self-contained Firebase Admin initialization
-try {
-  if (!admin.apps.length) {
-    admin.initializeApp();
-  }
-} catch (error: any) {
-  console.error('Firebase Admin initialization error', error);
-}
-
 export async function POST(req: NextRequest) {
+  if (!admin.apps.length) {
+    try {
+      admin.initializeApp();
+    } catch (initError: any) {
+      console.error('Firebase Admin initialization error:', initError);
+      return NextResponse.json({ error: 'Firebase Admin initialization error.' }, { status: 500 });
+    }
+  }
+  
   try {
     const adminAuth = admin.auth();
     const adminDb = admin.firestore();
@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ message: 'User created successfully', user: newUser }, { status: 201 });
 
-  } catch (error: any) {
+  } catch (error: any)_ {
     console.error('API Error creating user:', error);
     const errorMessage = error.message || 'An internal server error occurred.';
     return NextResponse.json({ error: errorMessage }, { status: 500 });
