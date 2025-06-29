@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -23,7 +22,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { HandHeart } from "lucide-react";
+import { HandHeart, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { addPrayerRequest } from "@/services/prayerRequestService";
+import type { PrayerRequestInput } from "@/types/prayerRequest";
 
 const formSchema = z.object({
   name: z.string().optional(),
@@ -32,6 +34,7 @@ const formSchema = z.object({
 
 export default function PrayerRequestForm() {
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -40,13 +43,24 @@ export default function PrayerRequestForm() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    toast({
-      title: "Pedido Recebido",
-      description: "Nossa equipe de intercessão estará orando por você. A paz do Senhor!",
-    });
-    form.reset();
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setIsLoading(true);
+    try {
+      await addPrayerRequest(values as PrayerRequestInput);
+      toast({
+        title: "Pedido Recebido",
+        description: "Nossa equipe de intercessão estará orando por você. A paz do Senhor!",
+      });
+      form.reset();
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Erro ao Enviar",
+        description: error instanceof Error ? error.message : "Ocorreu um erro desconhecido.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -95,8 +109,15 @@ export default function PrayerRequestForm() {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full">
-              Enviar Pedido de Oração
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Enviando...
+                </>
+              ) : (
+                "Enviar Pedido de Oração"
+              )}
             </Button>
           </form>
         </Form>

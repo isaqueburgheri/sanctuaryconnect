@@ -9,13 +9,14 @@ import {
   SheetTrigger,
   SheetClose,
 } from "@/components/ui/sheet";
-import { LogOut, Users, BarChart3, UserCog, Menu } from "lucide-react";
+import { LogOut, Users, BarChart3, UserCog, Menu, HandHeart } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { ThemeToggle } from "./ThemeToggle";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
   { href: "/visitors", label: "Visitantes", icon: Users },
+  { href: "/prayers", label: "Orações", icon: HandHeart },
   { href: "/dashboard", label: "Dashboard", icon: BarChart3 },
   { href: "/users", label: "Usuários", icon: UserCog },
 ];
@@ -26,6 +27,7 @@ export default function AdminHeader() {
   const getTitle = () => {
     if (pathname.startsWith("/dashboard")) return "Dashboard Geral";
     if (pathname.startsWith("/visitors")) return "Gerenciar Visitantes";
+    if (pathname.startsWith("/prayers")) return "Pedidos de Oração";
     if (pathname.startsWith("/users")) return "Gerenciar Usuários";
     return "Painel Administrativo";
   };
