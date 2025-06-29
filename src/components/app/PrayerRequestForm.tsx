@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -26,7 +27,7 @@ import { HandHeart } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().optional(),
-  request: z.string().min(10, "Por favor, compartilhe um pouco mais para que possamos orar por você."),
+  request: z.string().min(10, "Por favor, descreva seu pedido para que possamos orar especificamente por você."),
 });
 
 export default function PrayerRequestForm() {
@@ -43,7 +44,7 @@ export default function PrayerRequestForm() {
     console.log(values);
     toast({
       title: "Pedido Recebido",
-      description: "Nossa equipe de oração estará orando por você. Fique na paz.",
+      description: "Nossa equipe de intercessão estará orando por você. A paz do Senhor!",
     });
     form.reset();
   }
@@ -54,11 +55,11 @@ export default function PrayerRequestForm() {
         <div className="flex items-center gap-3">
           <HandHeart className="h-8 w-8 text-primary" />
           <CardTitle className="font-headline text-3xl">
-            Pedidos de Oração
+            Deixe seu Pedido de Oração
           </CardTitle>
         </div>
-        <CardDescription>
-          Compartilhe seus pedidos com nossa equipe de oração. Todas as submissões são confidenciais.
+        <CardDescription className="italic">
+          "Não andeis ansiosos por coisa alguma; antes as vossas petições sejam em tudo conhecidas diante de Deus pela oração e súplica, com ação de graças." - Fp 4:6
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -95,7 +96,7 @@ export default function PrayerRequestForm() {
               )}
             />
             <Button type="submit" className="w-full">
-              Enviar Pedido
+              Enviar Pedido de Oração
             </Button>
           </form>
         </Form>

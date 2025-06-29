@@ -9,32 +9,32 @@ import { Badge } from "@/components/ui/badge";
 
 const events = [
   {
-    title: "Culto de Domingo de Manhã",
+    title: "Escola Bíblica Dominical",
     date: "Todo Domingo",
-    time: "10:00 - 11:30",
-    location: "Santuário Principal",
+    time: "09:00 - 10:30",
+    location: "Templo",
+    category: "Ensino",
+  },
+  {
+    title: "Culto da Família",
+    date: "Todo Domingo",
+    time: "18:00 - 20:00",
+    location: "Templo",
     category: "Adoração",
   },
   {
-    title: "Encontro do Grupo de Jovens",
-    date: "Sexta-feira, 27 de Outubro",
-    time: "19:00 - 21:00",
-    location: "Salão de Confraternização",
-    category: "Jovens",
+    title: "Culto de Doutrina",
+    date: "Toda Terça-feira",
+    time: "19:30 - 21:00",
+    location: "Templo",
+    category: "Ensino",
   },
   {
-    title: "Ação Comunitária",
-    date: "Sábado, 4 de Novembro",
-    time: "09:00 - 12:00",
-    location: "Parque Local",
-    category: "Serviço",
-  },
-  {
-    title: "Estudo Bíblico Feminino",
-    date: "Toda Quarta-feira",
-    time: "18:30 - 20:00",
-    location: "Sala 101",
-    category: "Estudo",
+    title: "Culto de Oração",
+    date: "Toda Quinta-feira",
+    time: "19:30 - 21:00",
+    location: "Templo",
+    category: "Oração",
   },
 ];
 
@@ -42,7 +42,7 @@ export default function EventsCalendar() {
   return (
     <section>
       <h2 className="text-4xl font-headline font-bold mb-6 text-center lg:text-left">
-        Próximos Eventos
+        Nossos Cultos
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {events.map((event, index) => (

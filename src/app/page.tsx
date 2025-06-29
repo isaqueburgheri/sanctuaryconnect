@@ -1,7 +1,6 @@
 import Header from "@/components/app/Header";
 import VisitorCheckinForm from "@/components/app/VisitorCheckinForm";
 import EventsCalendar from "@/components/app/EventsCalendar";
-import PersonalizedWelcome from "@/components/app/PersonalizedWelcome";
 import PrayerRequestForm from "@/components/app/PrayerRequestForm";
 import TestimonialShowcase from "@/components/app/TestimonialShowcase";
 import Footer from "@/components/app/Footer";
@@ -13,10 +12,10 @@ export default function Home() {
       <main className="flex-grow container mx-auto px-4 py-8 md:py-12">
         <section className="text-center mb-12 md:mb-16">
           <h2 className="text-4xl md:text-5xl font-extrabold font-headline text-primary tracking-tight">
-            Bem-vindo à Nossa Comunidade de Fé
+            Bem-vindo à Casa do Senhor
           </h2>
           <p className="mt-4 max-w-3xl mx-auto text-lg text-muted-foreground">
-            Um lugar para se conectar, crescer e servir. Estamos muito felizes por você estar aqui.
+            Um lugar de fé, comunhão e adoração. Estamos felizes com a sua visita.
           </p>
         </section>
 
@@ -26,7 +25,6 @@ export default function Home() {
             <EventsCalendar />
           </div>
           <div className="lg:col-span-2 space-y-12">
-            <PersonalizedWelcome />
             <PrayerRequestForm />
           </div>
         </div>

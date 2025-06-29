@@ -14,7 +14,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
   CardContent,
@@ -23,12 +22,17 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { UserPlus, Sparkles } from "lucide-react";
+import { Handshake, UserPlus } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const formSchema = z.object({
-  name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres.").max(50),
-  contact: z.string().email("Por favor, insira um endereço de e-mail válido."),
-  interests: z.string().optional(),
+  name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres."),
+  isBeliever: z.enum(["sim", "nao"], {
+    required_error: "Por favor, selecione uma opção.",
+  }),
+  contact: z.string().optional(),
+  wantsVisit: z.boolean().default(false).optional(),
 });
 
 export default function VisitorCheckinForm() {
@@ -38,7 +42,7 @@ export default function VisitorCheckinForm() {
     defaultValues: {
       name: "",
       contact: "",
-      interests: "",
+      wantsVisit: false,
     },
   });
 
@@ -46,7 +50,7 @@ export default function VisitorCheckinForm() {
     console.log(values);
     toast({
       title: "Bem-vindo(a)!",
-      description: `Obrigado por fazer o check-in, ${values.name}. Estamos felizes por você estar aqui!`,
+      description: `Obrigado por se registrar, ${values.name}. Sua presença é uma alegria para nós!`,
     });
     form.reset();
   }
@@ -57,11 +61,11 @@ export default function VisitorCheckinForm() {
         <div className="flex items-center gap-3">
           <UserPlus className="h-8 w-8 text-primary" />
           <CardTitle className="font-headline text-3xl">
-            Novo por Aqui? Faça o Check-in!
+            Olá, Visitante!
           </CardTitle>
         </div>
         <CardDescription>
-          Adoraríamos nos conectar com você. Por favor, preencha o formulário abaixo.
+          Que a paz do Senhor esteja com você! Por favor, preencha para que possamos te dar as boas-vindas.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -72,7 +76,7 @@ export default function VisitorCheckinForm() {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nome Completo</FormLabel>
+                  <FormLabel>Seu Nome Completo</FormLabel>
                   <FormControl>
                     <Input placeholder="ex: Maria da Silva" {...field} />
                   </FormControl>
@@ -80,41 +84,81 @@ export default function VisitorCheckinForm() {
                 </FormItem>
               )}
             />
+            
+            <FormField
+              control={form.control}
+              name="isBeliever"
+              render={({ field }) => (
+                <FormItem className="space-y-3">
+                  <FormLabel>Já é membro de alguma igreja?</FormLabel>
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      className="flex gap-6"
+                    >
+                      <FormItem className="flex items-center space-x-2 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="sim" />
+                        </FormControl>
+                        <FormLabel className="font-normal">Sim</FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-2 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="nao" />
+                        </FormControl>
+                        <FormLabel className="font-normal">Não</FormLabel>
+                      </FormItem>
+                    </RadioGroup>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
             <FormField
               control={form.control}
               name="contact"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Endereço de Email</FormLabel>
+                  <FormLabel>Deixe seu WhatsApp (Opcional)</FormLabel>
                   <FormControl>
-                    <Input placeholder="voce@exemplo.com" {...field} />
+                    <Input placeholder="(11) 99999-9999" {...field} />
                   </FormControl>
+                  <FormDescription>
+                    Gostaríamos de manter contato com você.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
-              name="interests"
+              name="wantsVisit"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Interesses ou Pedidos de Oração</FormLabel>
+                <FormItem className="flex flex-row items-center space-x-3 space-y-0">
                   <FormControl>
-                    <Textarea
-                      placeholder="Diga-nos o que você procura em uma igreja, ou qualquer pedido de oração que tenha."
-                      {...field}
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
                     />
                   </FormControl>
-                  <FormMessage />
+                  <div className="space-y-0.5 leading-none">
+                    <FormLabel>
+                      Aceito receber uma visita em minha casa
+                    </FormLabel>
+                  </div>
                 </FormItem>
               )}
             />
+
             <Button
               type="submit"
               className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
             >
-              <Sparkles className="mr-2 h-4 w-4" />
-              Fazer Check-in
+              <Handshake className="mr-2 h-4 w-4" />
+              Registrar Visita
             </Button>
           </form>
         </Form>

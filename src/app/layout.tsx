@@ -3,8 +3,8 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: "Conexão Santuário",
-  description: "Um lugar para se conectar, crescer e servir na fé.",
+  title: "AD Belém - Setor 63",
+  description: "Igreja Evangélica Assembleia de Deus no Brasil, Ministério do Belém, Setor 63 - Sítio Conceição.",
 };
 
 export default function RootLayout({

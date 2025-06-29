@@ -37,10 +37,10 @@ export default function TestimonialShowcase() {
       <div className="text-center mb-10">
         <Heart className="h-10 w-10 text-primary mx-auto mb-4" />
         <h2 className="text-4xl font-headline font-bold">
-          Palavras da Nossa Comunidade
+          Testemunhos da Nossa Igreja
         </h2>
         <p className="text-muted-foreground mt-2">
-          Veja o que Deus está fazendo na vida de nossos membros.
+          Veja o que Deus tem feito na vida de nossos irmãos.
         </p>
       </div>
       <Carousel
