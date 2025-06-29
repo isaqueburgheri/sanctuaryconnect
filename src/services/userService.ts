@@ -60,6 +60,7 @@ export async function createUser(email: string): Promise<User> {
 // Função para obter a role de um usuário
 export async function getUserRole(uid: string): Promise<User['role'] | null> {
   try {
+    console.log("DEBUG: Verificando permissão para o UID:", uid); // Adicionando log para depuração
     const userDocRef = doc(db, "users", uid);
     const userDoc = await getDoc(userDocRef);
 
