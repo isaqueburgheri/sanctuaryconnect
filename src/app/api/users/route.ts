@@ -58,6 +58,23 @@ export async function POST(req: NextRequest) {
     );
   } catch (error: any) {
     console.error('API Error creating user:', error);
+
+    // Check for the specific credential error message and return a helpful diagnostic.
+    if (
+      error.message &&
+      (error.message.includes('Credential implementation') ||
+        error.message.includes('access token'))
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            'Erro de permissão no servidor. A aplicação não conseguiu se autenticar com o Google. Verifique se a Conta de Serviço do App Hosting tem o papel "Administrador do Firebase Authentication" no console do Google Cloud (IAM).',
+        },
+        {status: 500}
+      );
+    }
+
+    // Handle other known errors
     let errorMessage = 'An internal server error occurred.';
     if (error instanceof z.ZodError) {
       errorMessage = error.errors.map(e => e.message).join(', ');
