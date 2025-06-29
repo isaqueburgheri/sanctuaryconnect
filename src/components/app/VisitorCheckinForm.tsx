@@ -32,12 +32,25 @@ const formSchema = z.object({
     required_error: "Por favor, selecione uma opção.",
   }),
   churchName: z.string().optional(),
-  contact: z
-    .string()
-    .regex(/^\d*$/, "Por favor, insira apenas números.")
-    .optional(),
+  contact: z.string().optional(),
   wantsVisit: z.boolean().default(false).optional(),
 });
+
+const formatPhoneNumber = (value: string) => {
+  if (!value) return "";
+  const phoneNumber = value.replace(/\D/g, "").slice(0, 11);
+  const phoneNumberLength = phoneNumber.length;
+
+  if (phoneNumberLength === 0) return "";
+  if (phoneNumberLength < 3) return `(${phoneNumber}`;
+  if (phoneNumberLength < 8) {
+    return `(${phoneNumber.slice(0, 2)}) ${phoneNumber.slice(2)}`;
+  }
+  return `(${phoneNumber.slice(0, 2)}) ${phoneNumber.slice(
+    2,
+    7
+  )}-${phoneNumber.slice(7, 11)}`;
+};
 
 export default function VisitorCheckinForm() {
   const { toast } = useToast();
@@ -54,7 +67,11 @@ export default function VisitorCheckinForm() {
   const isBeliever = form.watch("isBeliever");
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+    const submissionValues = {
+      ...values,
+      contact: values.contact?.replace(/\D/g, ""),
+    };
+    console.log(submissionValues);
     toast({
       title: "Bem-vindo(a)!",
       description: `Obrigado por se registrar, ${values.name}. Sua presença é uma alegria para nós!`,
@@ -72,7 +89,8 @@ export default function VisitorCheckinForm() {
           </CardTitle>
         </div>
         <CardDescription>
-          Que a paz do Senhor esteja com você! Por favor, preencha para que possamos te dar as boas-vindas.
+          Que a paz do Senhor esteja com você! Por favor, preencha para que
+          possamos te dar as boas-vindas.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -91,7 +109,7 @@ export default function VisitorCheckinForm() {
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="isBeliever"
@@ -124,21 +142,21 @@ export default function VisitorCheckinForm() {
             />
 
             {isBeliever === "sim" && (
-                <FormField
-                  control={form.control}
-                  name="churchName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Qual igreja?</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Nome da sua igreja" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <FormField
+                control={form.control}
+                name="churchName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Qual igreja?</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Nome da sua igreja" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             )}
-            
+
             <FormField
               control={form.control}
               name="contact"
@@ -151,9 +169,10 @@ export default function VisitorCheckinForm() {
                       type="tel"
                       {...field}
                       onChange={(e) => {
-                        const { value } = e.target;
-                        const numericValue = value.replace(/\D/g, "");
-                        field.onChange(numericValue);
+                        const formattedPhoneNumber = formatPhoneNumber(
+                          e.target.value
+                        );
+                        field.onChange(formattedPhoneNumber);
                       }}
                     />
                   </FormControl>
