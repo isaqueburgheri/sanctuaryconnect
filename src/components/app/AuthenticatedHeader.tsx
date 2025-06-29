@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { LogOut, Shield, LayoutDashboard } from "lucide-react";
+import { LogOut, Users, LayoutDashboard } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 export default function AuthenticatedHeader() {
@@ -11,7 +11,7 @@ export default function AuthenticatedHeader() {
 
   const getTitle = () => {
     if (pathname.startsWith("/admin")) {
-      return "Painel do Administrador";
+      return "Lista de Visitantes";
     }
     if (pathname.startsWith("/dashboard")) {
       return "Painel da Recepção";
@@ -56,8 +56,8 @@ export default function AuthenticatedHeader() {
             asChild
           >
             <Link href="/admin">
-              <Shield />
-              Admin
+              <Users />
+              Visitantes
             </Link>
           </Button>
           <Button variant="outline" size="sm" asChild>
