@@ -11,6 +11,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -21,14 +29,19 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Users, CalendarDays, Filter, Loader2, Trash2, Church, HandHeart, Phone, FileText } from "lucide-react";
+import { Users, Filter, Loader2, Trash2, Info } from "lucide-react";
 import { getVisitors, getTodaysVisitors, deleteVisitor } from "@/services/visitorService";
 import type { Visitor } from "@/types/visitor";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { Skeleton } from "../ui/skeleton";
 
 interface VisitorListProps {
   isAdmin?: boolean;
@@ -62,7 +75,7 @@ export default function VisitorList({ isAdmin = false }: VisitorListProps) {
   useEffect(() => {
     fetchVisitors();
   }, [fetchVisitors]);
-  
+
   const handleDeleteVisitor = async (id: string) => {
     try {
       await deleteVisitor(id);
@@ -83,32 +96,18 @@ export default function VisitorList({ isAdmin = false }: VisitorListProps) {
   const toggleFilter = () => {
     setShowOnlyToday(prev => !prev);
   }
-
-  const renderSkeleton = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {[...Array(3)].map((_, i) => (
-        <Card key={i}>
-          <CardHeader>
-            <Skeleton className="h-6 w-1/2" />
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex gap-2">
-              <Skeleton className="h-5 w-5 rounded-full" />
-              <Skeleton className="h-5 w-3/4" />
-            </div>
-             <div className="flex gap-2">
-              <Skeleton className="h-5 w-5 rounded-full" />
-              <Skeleton className="h-5 w-2/4" />
-            </div>
-             <div className="flex gap-2">
-              <Skeleton className="h-5 w-5 rounded-full" />
-              <Skeleton className="h-5 w-3/5" />
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  );
+  
+  const formatContact = (contact?: string) => {
+    if (!contact) return "-";
+    const cleaned = contact.replace(/\D/g, '');
+    if (cleaned.length === 11) {
+      return `(${cleaned.substring(0, 2)}) ${cleaned.substring(2, 7)}-${cleaned.substring(7)}`;
+    }
+    if (cleaned.length === 10) {
+      return `(${cleaned.substring(0, 2)}) ${cleaned.substring(2, 6)}-${cleaned.substring(6)}`;
+    }
+    return contact;
+  };
 
   return (
     <Card>
@@ -132,116 +131,109 @@ export default function VisitorList({ isAdmin = false }: VisitorListProps) {
         </div>
       </CardHeader>
       <CardContent>
-        {isLoading ? (
-          renderSkeleton()
-        ) : visitors.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {visitors.map((visitor) => (
-              <Card 
-                key={visitor.id} 
-                className={cn(
-                  "flex flex-col transition-all duration-300", 
-                  visitor.isBeliever === 'nao' && 'border-accent shadow-lg shadow-accent/20'
-                )}
-              >
-                <CardHeader className="flex flex-row items-start justify-between pb-4">
-                  <CardTitle className="text-xl font-headline">{visitor.name}</CardTitle>
-                  {isAdmin && (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                         <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                         </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Esta ação não pode ser desfeita. Isso excluirá permanentemente o registro do visitante.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleDeleteVisitor(visitor.id)} className="bg-destructive hover:bg-destructive/90">
-                            Excluir
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  )}
-                </CardHeader>
-                <CardContent className="flex-grow space-y-4 text-sm">
-                  <div className="flex items-start gap-3">
-                    <CalendarDays className="h-4 w-4 text-primary mt-1" />
-                    <div>
-                      <p className="text-xs text-muted-foreground">Data da Visita</p>
-                      <p className="font-medium">{format(visitor.visitDate, "dd/MM/yyyy", { locale: ptBR })}</p>
+        <TooltipProvider>
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[200px] min-w-[150px]">Nome</TableHead>
+                <TableHead>Data da Visita</TableHead>
+                <TableHead>Crente?</TableHead>
+                <TableHead>Igreja</TableHead>
+                <TableHead>Aceita Visita?</TableHead>
+                <TableHead>Contato</TableHead>
+                <TableHead>Observações</TableHead>
+                {isAdmin && <TableHead className="text-right">Ações</TableHead>}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={isAdmin ? 8 : 7} className="h-24 text-center">
+                    <div className="flex justify-center items-center">
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Carregando visitantes...
                     </div>
-                  </div>
-
-                  <div className="flex items-start gap-3">
-                     <Users className="h-4 w-4 text-primary mt-1" />
-                     <div>
-                       <p className="text-xs text-muted-foreground">Crente?</p>
-                       <Badge variant={visitor.isBeliever === "sim" ? "secondary" : "destructive"}>
-                         {visitor.isBeliever === "sim" ? "Sim" : "Não"}
-                       </Badge>
-                     </div>
-                  </div>
-
-                  {visitor.churchName && (
-                    <div className="flex items-start gap-3">
-                      <Church className="h-4 w-4 text-primary mt-1" />
-                      <div>
-                        <p className="text-xs text-muted-foreground">Igreja</p>
-                        <p className="font-medium">{visitor.churchName}</p>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="flex items-start gap-3">
-                    <HandHeart className="h-4 w-4 text-primary mt-1" />
-                    <div>
-                      <p className="text-xs text-muted-foreground">Aceita Visita?</p>
+                  </TableCell>
+                </TableRow>
+              ) : visitors.length > 0 ? (
+                visitors.map((visitor) => (
+                  <TableRow
+                    key={visitor.id}
+                    className={cn(
+                      (visitor.isBeliever === "nao" || visitor.observations) && "bg-accent/20"
+                    )}
+                  >
+                    <TableCell className="font-medium">{visitor.name}</TableCell>
+                    <TableCell>{format(visitor.visitDate, "dd/MM/yy HH:mm", { locale: ptBR })}</TableCell>
+                    <TableCell>
+                      <Badge variant={visitor.isBeliever === "sim" ? "secondary" : "destructive"}>
+                        {visitor.isBeliever === "sim" ? "Sim" : "Não"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{visitor.churchName || "-"}</TableCell>
+                    <TableCell>
                        <Badge variant={visitor.wantsVisit ? "default" : "outline"}>
                         {visitor.wantsVisit ? "Sim" : "Não"}
                       </Badge>
-                    </div>
-                  </div>
-                  
-                  {visitor.contact && (
-                     <div className="flex items-start gap-3">
-                       <Phone className="h-4 w-4 text-primary mt-1" />
-                       <div>
-                         <p className="text-xs text-muted-foreground">Contato</p>
-                         <p className="font-medium">{visitor.contact}</p>
-                       </div>
-                     </div>
-                  )}
-
-                  {visitor.observations && (
-                    <div className="flex items-start gap-3">
-                      <FileText className="h-4 w-4 text-primary mt-1" />
-                      <div>
-                        <p className="text-xs text-muted-foreground">Observações</p>
-                        <p className="font-medium break-words">{visitor.observations}</p>
-                      </div>
-                    </div>
-                  )}
-
-                </CardContent>
-              </Card>
-            ))}
+                    </TableCell>
+                    <TableCell>{formatContact(visitor.contact)}</TableCell>
+                    <TableCell className="text-center">
+                      {visitor.observations ? (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 cursor-default">
+                               <Info className="h-4 w-4 text-primary" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="max-w-[300px] break-words whitespace-pre-wrap">{visitor.observations}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      ) : (
+                        "-"
+                      )}
+                    </TableCell>
+                    {isAdmin && (
+                      <TableCell className="text-right">
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Esta ação não pode ser desfeita. Isso excluirá permanentemente o registro do visitante <span className="font-bold">{visitor.name}</span>.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDeleteVisitor(visitor.id)} className="bg-destructive hover:bg-destructive/90">
+                                Excluir
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </TableCell>
+                    )}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={isAdmin ? 8 : 7} className="h-24 text-center">
+                    {showOnlyToday
+                      ? "Nenhum visitante registrado hoje."
+                      : "Nenhum visitante registrado."}
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
           </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center h-48 rounded-lg border-2 border-dashed border-border">
-            <p className="text-muted-foreground">
-              {showOnlyToday
-                ? "Nenhum visitante registrado hoje."
-                : "Nenhum visitante registrado."}
-            </p>
-          </div>
-        )}
+        </TooltipProvider>
       </CardContent>
     </Card>
   );
