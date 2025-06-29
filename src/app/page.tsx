@@ -2,6 +2,7 @@ import Header from "@/components/app/Header";
 import EventsCalendar from "@/components/app/EventsCalendar";
 import TestimonialShowcase from "@/components/app/TestimonialShowcase";
 import Footer from "@/components/app/Footer";
+import PrayerRequestForm from "@/components/app/PrayerRequestForm";
 
 export default function Home() {
   return (
@@ -19,6 +20,9 @@ export default function Home() {
 
         <EventsCalendar />
         <TestimonialShowcase />
+        <div className="mt-16 max-w-3xl mx-auto">
+          <PrayerRequestForm />
+        </div>
       </main>
       <Footer />
     </div>

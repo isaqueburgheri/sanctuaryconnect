@@ -73,8 +73,8 @@ export default function VisitorCheckinForm() {
     };
     console.log(submissionValues);
     toast({
-      title: "Bem-vindo(a)!",
-      description: `Obrigado por se registrar, ${values.name}. Sua presença é uma alegria para nós!`,
+      title: "Visitante Registrado!",
+      description: `${values.name} foi adicionado(a) à lista de visitantes.`,
     });
     form.reset();
   }
@@ -85,12 +85,11 @@ export default function VisitorCheckinForm() {
         <div className="flex items-center gap-3">
           <UserPlus className="h-8 w-8 text-primary" />
           <CardTitle className="font-headline text-3xl">
-            Olá, Visitante!
+            Cadastro de Visitantes
           </CardTitle>
         </div>
         <CardDescription>
-          Que a paz do Senhor esteja com você! Por favor, preencha para que
-          possamos te dar as boas-vindas.
+          Use este formulário para registrar um novo visitante.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -101,7 +100,7 @@ export default function VisitorCheckinForm() {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Seu Nome Completo</FormLabel>
+                  <FormLabel>Nome Completo do Visitante</FormLabel>
                   <FormControl>
                     <Input placeholder="ex: Maria da Silva" {...field} />
                   </FormControl>
@@ -149,7 +148,10 @@ export default function VisitorCheckinForm() {
                   <FormItem>
                     <FormLabel>Qual igreja?</FormLabel>
                     <FormControl>
-                      <Input placeholder="Nome da sua igreja" {...field} />
+                      <Input
+                        placeholder="Nome da igreja do visitante"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -162,7 +164,7 @@ export default function VisitorCheckinForm() {
               name="contact"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Deixe seu WhatsApp (Opcional)</FormLabel>
+                  <FormLabel>WhatsApp do Visitante (Opcional)</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="(11) 99999-9999"
@@ -177,7 +179,7 @@ export default function VisitorCheckinForm() {
                     />
                   </FormControl>
                   <FormDescription>
-                    Gostaríamos de manter contato com você.
+                    Para manter contato e enviar convites.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -197,7 +199,7 @@ export default function VisitorCheckinForm() {
                   </FormControl>
                   <div className="space-y-0.5 leading-none">
                     <FormLabel>
-                      Aceito receber uma visita em minha casa
+                      Aceita receber uma visita em sua casa
                     </FormLabel>
                   </div>
                 </FormItem>
