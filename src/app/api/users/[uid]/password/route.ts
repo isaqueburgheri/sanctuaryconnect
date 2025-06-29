@@ -1,25 +1,16 @@
 'use server';
 import { NextRequest, NextResponse } from 'next/server';
-import * as admin from 'firebase-admin';
-
-function initializeAdmin() {
-  if (!admin.apps.length) {
-    admin.initializeApp();
-  }
-  return { auth: admin.auth(), db: admin.firestore() };
-}
+import { adminAuth, adminDb } from '@/lib/firebase-admin';
 
 export async function PUT(req: NextRequest, { params }: { params: { uid: string } }) {
   try {
-    const { auth, db } = initializeAdmin();
-
     const idToken = req.headers.get('Authorization')?.split('Bearer ')[1];
     if (!idToken) {
       return NextResponse.json({ error: 'Authentication token is missing.' }, { status: 401 });
     }
-    const decodedToken = await auth.verifyIdToken(idToken);
+    const decodedToken = await adminAuth.verifyIdToken(idToken);
     const callingUid = decodedToken.uid;
-    const userDoc = await db.collection('users').doc(callingUid).get();
+    const userDoc = await adminDb.collection('users').doc(callingUid).get();
     if (!userDoc.exists() || userDoc.data()?.role !== 'Admin') {
       return NextResponse.json({ error: 'Permission denied. Only administrators can change passwords.' }, { status: 403 });
     }
@@ -34,7 +25,7 @@ export async function PUT(req: NextRequest, { params }: { params: { uid: string 
       return NextResponse.json({ error: 'A new password with at least 6 characters is required.' }, { status: 400 });
     }
     
-    await auth.updateUser(targetUid, {
+    await adminAuth.updateUser(targetUid, {
       password: newPassword,
     });
     
