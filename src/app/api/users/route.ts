@@ -1,19 +1,24 @@
-'use server';
 import { NextRequest, NextResponse } from 'next/server';
 import * as admin from 'firebase-admin';
 
-// Self-contained initialization to ensure robustness in a serverless environment
-if (!admin.apps.length) {
-  try {
-    admin.initializeApp();
-  } catch (error: any) {
-    console.error('Firebase Admin initialization error', error.stack);
+// Helper function to ensure Firebase Admin is initialized
+function ensureFirebaseAdminInitialized() {
+  if (admin.apps.length === 0) {
+    try {
+      admin.initializeApp();
+    } catch (error: any) {
+      console.error('Firebase Admin initialization error:', error.stack);
+      // This error will be caught by the calling function's try...catch
+      throw new Error('Firebase Admin initialization error.');
+    }
   }
+  return admin;
 }
 
 // GET method to list all users from the Firestore 'users' collection
 export async function GET(req: NextRequest) {
     try {
+        const admin = ensureFirebaseAdminInitialized();
         const idToken = req.headers.get('Authorization')?.split('Bearer ')[1];
         if (!idToken) {
             return NextResponse.json({ error: 'Authentication token is missing.' }, { status: 401 });
@@ -35,7 +40,8 @@ export async function GET(req: NextRequest) {
 
     } catch (error: any) {
         console.error('API Error listing users:', error);
-        return NextResponse.json({ error: error.message || 'An internal server error occurred while listing users.' }, { status: 500 });
+        const errorMessage = error.message || 'An internal server error occurred while listing users.';
+        return NextResponse.json({ error: errorMessage }, { status: 500 });
     }
 }
 
@@ -43,6 +49,7 @@ export async function GET(req: NextRequest) {
 // POST method to create a new user
 export async function POST(req: NextRequest) {
   try {
+    const admin = ensureFirebaseAdminInitialized();
     const idToken = req.headers.get('Authorization')?.split('Bearer ')[1];
     if (!idToken) {
       return NextResponse.json({ error: 'Authentication token is missing.' }, { status: 401 });

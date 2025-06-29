@@ -1,18 +1,22 @@
-'use server';
 import { NextRequest, NextResponse } from 'next/server';
 import * as admin from 'firebase-admin';
 
-// Self-contained initialization to ensure robustness in a serverless environment
-if (!admin.apps.length) {
-  try {
-    admin.initializeApp();
-  } catch (error: any) {
-    console.error('Firebase Admin initialization error', error.stack);
+// Helper function to ensure Firebase Admin is initialized
+function ensureFirebaseAdminInitialized() {
+  if (admin.apps.length === 0) {
+    try {
+      admin.initializeApp();
+    } catch (error: any) {
+      console.error('Firebase Admin initialization error:', error.stack);
+      throw new Error('Firebase Admin initialization error.');
+    }
   }
+  return admin;
 }
 
 export async function PUT(req: NextRequest, { params }: { params: { uid: string } }) {
   try {
+    const admin = ensureFirebaseAdminInitialized();
     const idToken = req.headers.get('Authorization')?.split('Bearer ')[1];
     if (!idToken) {
       return NextResponse.json({ error: 'Authentication token is missing.' }, { status: 401 });
