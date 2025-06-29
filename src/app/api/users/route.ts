@@ -4,16 +4,22 @@ import {NextRequest, NextResponse} from 'next/server';
 import * as admin from 'firebase-admin';
 import {z} from 'zod';
 
-// Initialize Firebase Admin SDK if not already initialized
-// This module-level initialization is more stable for serverless environments.
-if (!admin.apps.length) {
-  try {
-    admin.initializeApp({
-      credential: admin.credential.applicationDefault(),
-    });
-    console.log('Firebase Admin SDK initialized successfully.');
-  } catch (error: any) {
-    console.error('Firebase Admin initialization error:', error);
+// Helper function to initialize Firebase Admin SDK safely.
+// This ensures that initialization only happens once.
+function initializeFirebaseAdmin() {
+  if (!admin.apps.length) {
+    try {
+      // When deployed to App Hosting, applicationDefault() will use the
+      // App Hosting service account.
+      admin.initializeApp({
+        credential: admin.credential.applicationDefault(),
+      });
+      console.log('Firebase Admin SDK initialized successfully.');
+    } catch (error: any) {
+      console.error('Firebase Admin initialization error:', error);
+      // We throw an error here to be caught by the API route handler
+      throw new Error('Internal server configuration error during initialization.');
+    }
   }
 }
 
@@ -24,13 +30,10 @@ const createUserSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  // Check if SDK is initialized
-  if (!admin.apps.length) {
-    console.error('CRITICAL: Firebase Admin SDK is not initialized.');
-    return NextResponse.json(
-      {error: 'Internal server configuration error.'},
-      {status: 500}
-    );
+  try {
+    initializeFirebaseAdmin();
+  } catch (error: any) {
+    return NextResponse.json({error: error.message}, {status: 500});
   }
 
   try {
@@ -68,23 +71,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           error:
-            'Erro de permissão no servidor. A aplicação não conseguiu se autenticar com o Google. Verifique se a Conta de Serviço do App Hosting tem o papel "Administrador do Firebase Authentication" no console do Google Cloud (IAM).',
+            'Erro de permissão no servidor. A aplicação não conseguiu se autenticar. Verifique no console do Google Cloud (IAM) se a conta de serviço do App Hosting tem o papel "Administrador do Firebase Authentication".',
         },
         {status: 500}
       );
     }
-
+    
     // Handle other known errors
-    let errorMessage = 'An internal server error occurred.';
     if (error instanceof z.ZodError) {
-      errorMessage = error.errors.map(e => e.message).join(', ');
+      const errorMessage = error.errors.map(e => e.message).join(', ');
       return NextResponse.json({error: errorMessage}, {status: 400});
     }
+
     if (error.code === 'auth/email-already-exists') {
-      errorMessage = 'Este email já está em uso por outro usuário.';
-    } else if (error.message) {
-      errorMessage = error.message;
+        return NextResponse.json({error: 'Este email já está em uso por outro usuário.'}, {status: 409});
     }
-    return NextResponse.json({error: errorMessage}, {status: 500});
+
+    return NextResponse.json({error: error.message || 'An internal server error occurred.'}, {status: 500});
   }
 }

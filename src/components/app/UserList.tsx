@@ -47,8 +47,6 @@ import {Loader2, PlusCircle} from 'lucide-react';
 import {useToast} from '@/hooks/use-toast';
 import type {User, CreateUserInput} from '@/types/user';
 import {listenToUsers, createUser} from '@/services/userService';
-import {onAuthStateChanged} from 'firebase/auth';
-import {auth} from '@/lib/firebase';
 import {useForm} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -80,31 +78,23 @@ export default function UserList() {
   });
 
   useEffect(() => {
-    const authUnsubscribe = onAuthStateChanged(auth, user => {
-      if (user) {
-        setIsLoading(true);
-        const usersUnsubscribe = listenToUsers(
-          userList => {
-            setUsers(userList);
-            setIsLoading(false);
-          },
-          error => {
-            toast({
-              variant: 'destructive',
-              title: 'Erro ao carregar usuários',
-              description: error.message,
-            });
-            setIsLoading(false);
-          }
-        );
-        return () => usersUnsubscribe();
-      } else {
+    setIsLoading(true);
+    const unsubscribe = listenToUsers(
+      userList => {
+        setUsers(userList);
         setIsLoading(false);
-        setUsers([]);
+      },
+      error => {
+        toast({
+          variant: 'destructive',
+          title: 'Erro ao carregar usuários',
+          description: error.message,
+        });
+        setIsLoading(false);
       }
-    });
-
-    return () => authUnsubscribe();
+    );
+    // Cleanup subscription on component unmount
+    return () => unsubscribe();
   }, [toast]);
 
   async function handleAddUser(values: CreateUserInput) {
@@ -232,12 +222,13 @@ export default function UserList() {
             <TableRow>
               <TableHead>Email</TableHead>
               <TableHead>Cargo</TableHead>
+              <TableHead>ID do Usuário</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={2} className="h-24 text-center">
+                <TableCell colSpan={3} className="h-24 text-center">
                   <div className="flex justify-center items-center">
                     <Loader2 className="mr-2 h-6 w-6 animate-spin" />
                     Carregando usuários...
@@ -246,8 +237,8 @@ export default function UserList() {
               </TableRow>
             ) : users.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={2} className="h-24 text-center">
-                  Nenhum usuário encontrado. Faça login para ver a lista.
+                <TableCell colSpan={3} className="h-24 text-center">
+                  Nenhum usuário encontrado. Adicione um para começar.
                 </TableCell>
               </TableRow>
             ) : (
@@ -257,16 +248,13 @@ export default function UserList() {
                   <TableCell>
                     <Badge
                       variant={
-                        user.role === 'Admin'
-                          ? 'default'
-                          : user.role === 'Recepção'
-                          ? 'secondary'
-                          : 'outline'
+                        user.role === 'Admin' ? 'destructive' : 'secondary'
                       }
                     >
                       {user.role}
                     </Badge>
                   </TableCell>
+                  <TableCell className="font-mono text-xs text-muted-foreground">{user.id}</TableCell>
                 </TableRow>
               ))
             )}
