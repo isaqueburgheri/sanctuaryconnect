@@ -57,6 +57,7 @@ export async function POST(req: NextRequest) {
      if (error.code === 'auth/id-token-expired' || error.code === 'auth/argument-error') {
       return NextResponse.json({ error: 'Authentication token is invalid or expired.' }, { status: 401 });
     }
-    return NextResponse.json({ error: 'An internal server error occurred.' }, { status: 500 });
+    const errorMessage = error.message || 'An internal server error occurred.';
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
