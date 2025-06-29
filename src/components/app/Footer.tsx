@@ -20,7 +20,7 @@ export default function Footer() {
         </div>
         <div className="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-6 mb-4 text-sm">
           <Link
-            href="https://www.google.com/maps/dir/?api=1&destination=R.%20Wilson%20Fernando%20S%C3%A3o%20Carvalho%2C%2040%20-%20Conj.%20Hab.%20Sitio%20Conceicao%2C%20S%C3%A3o%20Paulo%20-%20SP%2C%2008473-000"
+            href="https://maps.app.goo.gl/mh2WGv8zKaZPib2s8"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 hover:text-primary transition-colors"
