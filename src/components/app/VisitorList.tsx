@@ -136,12 +136,12 @@ export default function VisitorList({ isAdmin = false }: VisitorListProps) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[200px] min-w-[150px]">Nome</TableHead>
                 <TableHead>Data da Visita</TableHead>
+                <TableHead className="w-[200px] min-w-[150px]">Nome</TableHead>
                 <TableHead>Crente?</TableHead>
                 <TableHead>Igreja</TableHead>
-                <TableHead>Aceita Visita?</TableHead>
                 <TableHead>Contato</TableHead>
+                <TableHead>Aceita Visita?</TableHead>
                 <TableHead>Observações</TableHead>
                 {isAdmin && <TableHead className="text-right">Ações</TableHead>}
               </TableRow>
@@ -164,20 +164,20 @@ export default function VisitorList({ isAdmin = false }: VisitorListProps) {
                       (visitor.isBeliever === "nao" || visitor.observations) && "bg-accent/20"
                     )}
                   >
-                    <TableCell className="font-medium">{visitor.name}</TableCell>
                     <TableCell>{format(visitor.visitDate, "dd/MM/yy HH:mm", { locale: ptBR })}</TableCell>
+                    <TableCell className="font-medium">{visitor.name}</TableCell>
                     <TableCell>
                       <Badge variant={visitor.isBeliever === "sim" ? "secondary" : "destructive"}>
                         {visitor.isBeliever === "sim" ? "Sim" : "Não"}
                       </Badge>
                     </TableCell>
                     <TableCell>{visitor.churchName || "-"}</TableCell>
+                    <TableCell>{formatContact(visitor.contact)}</TableCell>
                     <TableCell>
                        <Badge variant={visitor.wantsVisit ? "default" : "outline"}>
                         {visitor.wantsVisit ? "Sim" : "Não"}
                       </Badge>
                     </TableCell>
-                    <TableCell>{formatContact(visitor.contact)}</TableCell>
                     <TableCell className="text-center">
                       {visitor.observations ? (
                         <Tooltip>
