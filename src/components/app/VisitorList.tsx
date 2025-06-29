@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
@@ -20,76 +20,43 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Users, CalendarDays, Filter } from "lucide-react";
-
-// Dados de exemplo com datas
-const today = new Date();
-const yesterday = new Date();
-yesterday.setDate(yesterday.getDate() - 1);
-const twoDaysAgo = new Date();
-twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
-
-const allVisitors = [
-  {
-    id: 1,
-    name: "Carlos Pereira",
-    isBeliever: "sim",
-    churchName: "Igreja Batista da Esperança",
-    contact: "(11) 98765-4321",
-    wantsVisit: true,
-    visitDate: today,
-  },
-  {
-    id: 2,
-    name: "Ana Julia",
-    isBeliever: "nao",
-    churchName: "",
-    contact: "(21) 99999-8888",
-    wantsVisit: false,
-    visitDate: today,
-  },
-  {
-    id: 3,
-    name: "Família Oliveira",
-    isBeliever: "sim",
-    churchName: "AD Madureira",
-    contact: "",
-    wantsVisit: false,
-    visitDate: yesterday,
-  },
-  {
-    id: 4,
-    name: "Ricardo Mendes",
-    isBeliever: "nao",
-    churchName: "",
-    contact: "(11) 91234-5678",
-    wantsVisit: true,
-    visitDate: twoDaysAgo,
-  },
-  {
-    id: 5,
-    name: "Mariana Costa",
-    isBeliever: "sim",
-    churchName: "AD Belém - Setor 25",
-    contact: "(11) 98888-7777",
-    wantsVisit: true,
-    visitDate: today,
-  },
-];
+import { Users, CalendarDays, Filter, Loader2 } from "lucide-react";
+import { getVisitors, getTodaysVisitors } from "@/services/visitorService";
+import type { Visitor } from "@/types/visitor";
+import { useToast } from "@/hooks/use-toast";
 
 export default function VisitorList() {
+  const [visitors, setVisitors] = useState<Visitor[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [showOnlyToday, setShowOnlyToday] = useState(true);
+  const { toast } = useToast();
 
-  const filteredVisitors = showOnlyToday
-    ? allVisitors.filter((visitor) => {
-        const visitorDate = new Date(visitor.visitDate);
-        return (
-          visitorDate.getDate() === today.getDate() &&
-          visitorDate.getMonth() === today.getMonth() &&
-          visitorDate.getFullYear() === today.getFullYear()
-        );
-      })
-    : allVisitors;
+  const fetchVisitors = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const visitorData = showOnlyToday
+        ? await getTodaysVisitors()
+        : await getVisitors();
+      setVisitors(visitorData);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Erro ao Carregar Visitantes",
+        description: error instanceof Error ? error.message : "Ocorreu um erro desconhecido.",
+      });
+      setVisitors([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [showOnlyToday, toast]);
+
+  useEffect(() => {
+    fetchVisitors();
+  }, [fetchVisitors]);
+
+  const toggleFilter = () => {
+    setShowOnlyToday(prev => !prev);
+  }
 
   return (
     <Card>
@@ -106,7 +73,7 @@ export default function VisitorList() {
               </CardDescription>
             </div>
           </div>
-          <Button onClick={() => setShowOnlyToday(!showOnlyToday)}>
+          <Button onClick={toggleFilter} disabled={isLoading}>
             <Filter className="mr-2 h-4 w-4" />
             {showOnlyToday ? "Mostrar Todos" : "Mostrar Somente Hoje"}
           </Button>
@@ -130,8 +97,17 @@ export default function VisitorList() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredVisitors.length > 0 ? (
-              filteredVisitors.map((visitor) => (
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center h-24">
+                  <div className="flex justify-center items-center gap-2">
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <span>Carregando visitantes...</span>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : visitors.length > 0 ? (
+              visitors.map((visitor) => (
                 <TableRow key={visitor.id}>
                   <TableCell className="font-medium">{visitor.name}</TableCell>
                   <TableCell>

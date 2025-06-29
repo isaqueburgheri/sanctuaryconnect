@@ -25,6 +25,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Handshake, UserPlus } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useState } from "react";
+import { addVisitor } from "@/services/visitorService";
+import type { VisitorInput } from "@/types/visitor";
 
 const formSchema = z.object({
   name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres."),
@@ -54,6 +57,8 @@ const formatPhoneNumber = (value: string) => {
 
 export default function VisitorCheckinForm() {
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -66,17 +71,28 @@ export default function VisitorCheckinForm() {
 
   const isBeliever = form.watch("isBeliever");
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    const submissionValues = {
-      ...values,
-      contact: values.contact?.replace(/\D/g, ""),
-    };
-    console.log(submissionValues);
-    toast({
-      title: "Visitante Registrado!",
-      description: `${values.name} foi adicionado(a) à lista de visitantes.`,
-    });
-    form.reset();
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setIsLoading(true);
+    try {
+      const submissionValues: VisitorInput = {
+        ...values,
+        contact: values.contact?.replace(/\D/g, ""),
+      };
+      await addVisitor(submissionValues);
+      toast({
+        title: "Visitante Registrado!",
+        description: `${values.name} foi adicionado(a) com sucesso.`,
+      });
+      form.reset();
+    } catch (error) {
+       toast({
+        variant: "destructive",
+        title: "Erro ao Registrar",
+        description: error instanceof Error ? error.message : "Ocorreu um erro desconhecido.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -209,9 +225,10 @@ export default function VisitorCheckinForm() {
             <Button
               type="submit"
               className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+              disabled={isLoading}
             >
               <Handshake className="mr-2 h-4 w-4" />
-              Registrar Visita
+              {isLoading ? "Registrando..." : "Registrar Visita"}
             </Button>
           </form>
         </Form>
