@@ -15,7 +15,7 @@ export default function Footer() {
             className="h-6 w-6"
           />
           <p className="font-headline font-bold text-lg">
-            AD Belém - Setor 63 (Sítio Conceição)
+            AD Belém - City Conceição - Setor 63
           </p>
         </div>
         <div className="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-6 mb-4 text-sm">
@@ -37,8 +37,11 @@ export default function Footer() {
           </Link>
         </div>
         <p className="text-xs text-muted-foreground">
-          &copy; {new Date().getFullYear()} AD Belém - Setor 63. Todos os Direitos
+          &copy; {new Date().getFullYear()} AD Belém - City Conceição - Setor 63. Todos os Direitos
           Reservados.
+        </p>
+        <p className="text-xs text-muted-foreground mt-2">
+          Desenvolvido por Isaque S. Burgheri
         </p>
       </div>
     </footer>
