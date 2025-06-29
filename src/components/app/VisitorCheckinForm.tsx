@@ -26,8 +26,8 @@ import { useToast } from "@/hooks/use-toast";
 import { UserPlus, Sparkles } from "lucide-react";
 
 const formSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters.").max(50),
-  contact: z.string().email("Please enter a valid email address."),
+  name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres.").max(50),
+  contact: z.string().email("Por favor, insira um endereço de e-mail válido."),
   interests: z.string().optional(),
 });
 
@@ -45,8 +45,8 @@ export default function VisitorCheckinForm() {
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
     toast({
-      title: "Welcome!",
-      description: `Thank you for checking in, ${values.name}. We're glad you're here!`,
+      title: "Bem-vindo(a)!",
+      description: `Obrigado por fazer o check-in, ${values.name}. Estamos felizes por você estar aqui!`,
     });
     form.reset();
   }
@@ -57,11 +57,11 @@ export default function VisitorCheckinForm() {
         <div className="flex items-center gap-3">
           <UserPlus className="h-8 w-8 text-primary" />
           <CardTitle className="font-headline text-3xl">
-            New Here? Check In!
+            Novo por Aqui? Faça o Check-in!
           </CardTitle>
         </div>
         <CardDescription>
-          We'd love to connect with you. Please fill out the form below.
+          Adoraríamos nos conectar com você. Por favor, preencha o formulário abaixo.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -72,9 +72,9 @@ export default function VisitorCheckinForm() {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Full Name</FormLabel>
+                  <FormLabel>Nome Completo</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Jane Doe" {...field} />
+                    <Input placeholder="ex: Maria da Silva" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -85,9 +85,9 @@ export default function VisitorCheckinForm() {
               name="contact"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email Address</FormLabel>
+                  <FormLabel>Endereço de Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="you@example.com" {...field} />
+                    <Input placeholder="voce@exemplo.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -98,10 +98,10 @@ export default function VisitorCheckinForm() {
               name="interests"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Interests or Prayer Requests</FormLabel>
+                  <FormLabel>Interesses ou Pedidos de Oração</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Tell us what you're looking for in a church, or any prayer requests you have."
+                      placeholder="Diga-nos o que você procura em uma igreja, ou qualquer pedido de oração que tenha."
                       {...field}
                     />
                   </FormControl>
@@ -114,7 +114,7 @@ export default function VisitorCheckinForm() {
               className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               <Sparkles className="mr-2 h-4 w-4" />
-              Check In
+              Fazer Check-in
             </Button>
           </form>
         </Form>

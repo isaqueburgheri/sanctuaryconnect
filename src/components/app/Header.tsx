@@ -8,10 +8,10 @@ export default function Header() {
         <Link href="/" className="flex items-center gap-3">
           <Church className="h-8 w-8 text-primary" />
           <h1 className="text-3xl font-headline font-bold text-foreground">
-            SanctuaryConnect
+            Conexão Santuário
           </h1>
         </Link>
-        <nav>{/* Navigation can be added here */}</nav>
+        <nav>{/* A navegação pode ser adicionada aqui */}</nav>
       </div>
     </header>
   );

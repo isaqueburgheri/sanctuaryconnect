@@ -13,10 +13,10 @@ export default function Home() {
       <main className="flex-grow container mx-auto px-4 py-8 md:py-12">
         <section className="text-center mb-12 md:mb-16">
           <h2 className="text-4xl md:text-5xl font-extrabold font-headline text-primary tracking-tight">
-            Welcome to Our Community of Faith
+            Bem-vindo à Nossa Comunidade de Fé
           </h2>
           <p className="mt-4 max-w-3xl mx-auto text-lg text-muted-foreground">
-            A place to connect, grow, and serve. We're so glad you're here.
+            Um lugar para se conectar, crescer e servir. Estamos muito felizes por você estar aqui.
           </p>
         </section>
 

@@ -27,22 +27,22 @@ export default function PersonalizedWelcome() {
     setWelcomeMessage("");
     // Simulate AI call
     setTimeout(() => {
-      let message = `Welcome, ${name}! We're so blessed to have you with us today. `;
+      let message = `Bem-vindo(a), ${name}! Somos muito abençoados por ter você conosco hoje. `;
       if (
-        interests.toLowerCase().includes("youth") ||
-        interests.toLowerCase().includes("kids")
+        interests.toLowerCase().includes("jovens") ||
+        interests.toLowerCase().includes("crianças")
       ) {
         message +=
-          "We saw you're interested in youth activities. Our youth group is a vibrant community, and we'd love for you to join! They meet every Friday at 7 PM.";
+          "Vimos que você tem interesse em atividades para jovens. Nosso grupo de jovens é uma comunidade vibrante, e adoraríamos que você se juntasse a nós! Eles se encontram toda sexta-feira às 19h.";
       } else if (
-        interests.toLowerCase().includes("music") ||
-        interests.toLowerCase().includes("worship")
+        interests.toLowerCase().includes("música") ||
+        interests.toLowerCase().includes("louvor")
       ) {
         message +=
-          "It's wonderful that you have a heart for music! Our worship team is always looking for passionate individuals. We believe you'll feel right at home in our services.";
+          "É maravilhoso que você tenha um coração para a música! Nossa equipe de louvor está sempre procurando por pessoas apaixonadas. Acreditamos que você se sentirá em casa em nossos cultos.";
       } else {
         message +=
-          "We pray you feel the warmth of our community and the presence of God during your visit. Please don't hesitate to speak with one of our pastors.";
+          "Oramos para que você sinta o calor da nossa comunidade e a presença de Deus durante sua visita. Não hesite em falar com um de nossos pastores.";
       }
       setWelcomeMessage(message);
       setIsLoading(false);
@@ -55,11 +55,11 @@ export default function PersonalizedWelcome() {
         <div className="flex items-center gap-3">
           <Wand2 className="h-8 w-8 text-primary" />
           <CardTitle className="font-headline text-3xl">
-            Personalized Welcome
+            Boas-Vindas Personalizadas
           </CardTitle>
         </div>
         <CardDescription>
-          Let us create a special welcome message just for you.
+          Deixe-nos criar uma mensagem de boas-vindas especial para você.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -67,17 +67,17 @@ export default function PersonalizedWelcome() {
           <Input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Your Name"
-            aria-label="Your Name"
+            placeholder="Seu Nome"
+            aria-label="Seu Nome"
           />
           <Textarea
             value={interests}
             onChange={(e) => setInterests(e.target.value)}
-            placeholder="Any specific interests? (e.g., music, youth group)"
-            aria-label="Your interests"
+            placeholder="Algum interesse específico? (ex: música, grupo de jovens)"
+            aria-label="Seus interesses"
           />
           <Button type="submit" className="w-full" disabled={isLoading || !name}>
-            {isLoading ? "Generating..." : "Create My Welcome"}
+            {isLoading ? "Gerando..." : "Criar Minhas Boas-Vindas"}
             <Sparkles className="ml-2 h-4 w-4" />
           </Button>
         </form>

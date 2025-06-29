@@ -9,32 +9,32 @@ import { Badge } from "@/components/ui/badge";
 
 const events = [
   {
-    title: "Sunday Morning Service",
-    date: "Every Sunday",
-    time: "10:00 AM - 11:30 AM",
-    location: "Main Sanctuary",
-    category: "Worship",
+    title: "Culto de Domingo de Manhã",
+    date: "Todo Domingo",
+    time: "10:00 - 11:30",
+    location: "Santuário Principal",
+    category: "Adoração",
   },
   {
-    title: "Youth Group Hangout",
-    date: "Friday, October 27th",
-    time: "7:00 PM - 9:00 PM",
-    location: "Fellowship Hall",
-    category: "Youth",
+    title: "Encontro do Grupo de Jovens",
+    date: "Sexta-feira, 27 de Outubro",
+    time: "19:00 - 21:00",
+    location: "Salão de Confraternização",
+    category: "Jovens",
   },
   {
-    title: "Community Outreach",
-    date: "Saturday, November 4th",
-    time: "9:00 AM - 12:00 PM",
-    location: "Local Park",
-    category: "Service",
+    title: "Ação Comunitária",
+    date: "Sábado, 4 de Novembro",
+    time: "09:00 - 12:00",
+    location: "Parque Local",
+    category: "Serviço",
   },
   {
-    title: "Women's Bible Study",
-    date: "Every Wednesday",
-    time: "6:30 PM - 8:00 PM",
-    location: "Room 101",
-    category: "Study",
+    title: "Estudo Bíblico Feminino",
+    date: "Toda Quarta-feira",
+    time: "18:30 - 20:00",
+    location: "Sala 101",
+    category: "Estudo",
   },
 ];
 
@@ -42,7 +42,7 @@ export default function EventsCalendar() {
   return (
     <section>
       <h2 className="text-4xl font-headline font-bold mb-6 text-center lg:text-left">
-        Upcoming Events
+        Próximos Eventos
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {events.map((event, index) => (

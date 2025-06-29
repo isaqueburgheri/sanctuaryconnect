@@ -11,23 +11,23 @@ import { Quote, Heart } from "lucide-react";
 const testimonials = [
   {
     quote:
-      "Finding this church felt like coming home. The community is so welcoming and I've grown so much in my faith here.",
+      "Encontrar esta igreja foi como voltar para casa. A comunidade é muito acolhedora e eu cresci muito na minha fé aqui.",
     name: "Maria S.",
   },
   {
     quote:
-      "The sermons are always so insightful and relevant to my life. I leave feeling inspired every single week.",
-    name: "David L.",
+      "Os sermões são sempre tão perspicazes e relevantes para a minha vida. Saio inspirado(a) toda semana.",
+    name: "Davi L.",
   },
   {
     quote:
-      "My kids love the youth program! It's a safe, fun, and faith-filled environment. We are so grateful.",
-    name: "The Johnson Family",
+      "Meus filhos amam o programa de jovens! É um ambiente seguro, divertido e cheio de fé. Somos muito gratos.",
+    name: "A Família Silva",
   },
   {
     quote:
-      "Through a difficult season, this church was my rock. The prayer support and genuine care I received was a true blessing.",
-    name: "Eleanor P.",
+      "Durante um período difícil, esta igreja foi minha rocha. O apoio em oração e o cuidado genuíno que recebi foram uma verdadeira bênção.",
+    name: "Eleonora P.",
   },
 ];
 
@@ -37,10 +37,10 @@ export default function TestimonialShowcase() {
       <div className="text-center mb-10">
         <Heart className="h-10 w-10 text-primary mx-auto mb-4" />
         <h2 className="text-4xl font-headline font-bold">
-          Words from Our Community
+          Palavras da Nossa Comunidade
         </h2>
         <p className="text-muted-foreground mt-2">
-          See what God is doing in the lives of our members.
+          Veja o que Deus está fazendo na vida de nossos membros.
         </p>
       </div>
       <Carousel

@@ -26,7 +26,7 @@ import { HandHeart } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().optional(),
-  request: z.string().min(10, "Please share a bit more for us to pray for."),
+  request: z.string().min(10, "Por favor, compartilhe um pouco mais para que possamos orar por você."),
 });
 
 export default function PrayerRequestForm() {
@@ -42,8 +42,8 @@ export default function PrayerRequestForm() {
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
     toast({
-      title: "Request Received",
-      description: "Our prayer team will be lifting you up. Be blessed.",
+      title: "Pedido Recebido",
+      description: "Nossa equipe de oração estará orando por você. Fique na paz.",
     });
     form.reset();
   }
@@ -54,12 +54,11 @@ export default function PrayerRequestForm() {
         <div className="flex items-center gap-3">
           <HandHeart className="h-8 w-8 text-primary" />
           <CardTitle className="font-headline text-3xl">
-            Prayer Requests
+            Pedidos de Oração
           </CardTitle>
         </div>
         <CardDescription>
-          Share your requests with our prayer team. All submissions are
-          confidential.
+          Compartilhe seus pedidos com nossa equipe de oração. Todas as submissões são confidenciais.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -70,9 +69,9 @@ export default function PrayerRequestForm() {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name (Optional)</FormLabel>
+                  <FormLabel>Nome (Opcional)</FormLabel>
                   <FormControl>
-                    <Input placeholder="Your name" {...field} />
+                    <Input placeholder="Seu nome" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -83,10 +82,10 @@ export default function PrayerRequestForm() {
               name="request"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Prayer Request</FormLabel>
+                  <FormLabel>Pedido de Oração</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="How can we pray for you today?"
+                      placeholder="Como podemos orar por você hoje?"
                       className="min-h-[120px]"
                       {...field}
                     />
@@ -96,7 +95,7 @@ export default function PrayerRequestForm() {
               )}
             />
             <Button type="submit" className="w-full">
-              Submit Request
+              Enviar Pedido
             </Button>
           </form>
         </Form>
