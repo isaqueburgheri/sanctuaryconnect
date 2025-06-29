@@ -1,7 +1,5 @@
 import Header from "@/components/app/Header";
-import VisitorCheckinForm from "@/components/app/VisitorCheckinForm";
 import EventsCalendar from "@/components/app/EventsCalendar";
-import PrayerRequestForm from "@/components/app/PrayerRequestForm";
 import TestimonialShowcase from "@/components/app/TestimonialShowcase";
 import Footer from "@/components/app/Footer";
 
@@ -19,16 +17,7 @@ export default function Home() {
           </p>
         </section>
 
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-12">
-          <div className="lg:col-span-3 space-y-12">
-            <VisitorCheckinForm />
-            <EventsCalendar />
-          </div>
-          <div className="lg:col-span-2 space-y-12">
-            <PrayerRequestForm />
-          </div>
-        </div>
-
+        <EventsCalendar />
         <TestimonialShowcase />
       </main>
       <Footer />

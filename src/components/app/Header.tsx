@@ -1,5 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Button } from "../ui/button";
+import { LogIn } from "lucide-react";
 
 export default function Header() {
   return (
@@ -13,11 +15,18 @@ export default function Header() {
             height={40}
             className="h-10 w-10"
           />
-          <h1 className="text-3xl font-headline font-bold text-foreground">
+          <h1 className="text-xl md:text-3xl font-headline font-bold text-foreground">
             AD Belém - Setor 63
           </h1>
         </Link>
-        <nav>{/* A navegação pode ser adicionada aqui */}</nav>
+        <nav>
+          <Button asChild>
+            <Link href="/login">
+              <LogIn />
+              Acesso Restrito
+            </Link>
+          </Button>
+        </nav>
       </div>
     </header>
   );
