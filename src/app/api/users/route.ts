@@ -10,9 +10,12 @@ function ensureFirebaseAdminInitialized() {
   }
   
   try {
-    // On Google Cloud infrastructure (like App Hosting), initializeApp()
-    // automatically discovers the project configuration and credentials from the environment.
-    admin.initializeApp();
+    // On Google Cloud infrastructure (like App Hosting), initializeApp() with
+    // applicationDefault credentials automatically discovers the project
+    // configuration and credentials from the environment.
+    admin.initializeApp({
+      credential: admin.credential.applicationDefault(),
+    });
   } catch (error: any) {
     console.error('Firebase Admin initialization error:', error);
     // Throw a clearer error to be caught by the route handler
