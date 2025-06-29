@@ -141,7 +141,8 @@ export default function UserList() {
             <DialogHeader>
               <DialogTitle>Adicionar Novo Usuário</DialogTitle>
               <DialogDescription>
-                Preencha os detalhes abaixo para criar um novo usuário.
+                Isto criará o usuário no sistema de login e registrará seu cargo
+                no banco de dados, mantendo tudo sincronizado.
               </DialogDescription>
             </DialogHeader>
             <Form {...form}>
