@@ -1,12 +1,8 @@
 import { auth, db } from "@/lib/firebase";
-import {
-  createUserWithEmailAndPassword,
-  getIdToken,
-} from "firebase/auth";
+import { getIdToken } from "firebase/auth";
 import {
   collection,
   doc,
-  setDoc,
   getDoc,
   getDocs,
   Timestamp,
@@ -15,41 +11,41 @@ import type { User, UserDocument } from "@/types/user";
 
 const usersCollectionRef = collection(db, "users");
 
-// Função para criar um novo usuário (recepcionista) com email e senha
+async function getAuthHeaders() {
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+        throw new Error("User not authenticated. Please log in again.");
+    }
+    const idToken = await getIdToken(currentUser);
+    return {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${idToken}`
+    };
+}
+
 export async function createUser(email: string, password: string): Promise<User> {
   try {
-    // Cria o usuário no Firebase Authentication com a senha fornecida
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const authUser = userCredential.user;
+    const headers = await getAuthHeaders();
+    const response = await fetch('/api/users', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ email, password })
+    });
 
-    // Cria o documento do usuário no Firestore para armazenar a role
-    const newUserDoc: UserDocument = {
-      email: authUser.email!,
-      role: 'Recepção', // Por padrão, usuários criados pelo painel são da recepção
-      createdAt: Timestamp.now(),
-    };
-    
-    await setDoc(doc(db, "users", authUser.uid), newUserDoc);
-
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.error || 'Failed to create user.');
+    }
     return {
-      id: authUser.uid,
-      email: newUserDoc.email,
-      role: newUserDoc.role,
-      createdAt: newUserDoc.createdAt.toDate(),
+        ...data.user,
+        createdAt: new Date(data.user.createdAt)
     };
   } catch (error: any) {
-    if (error.code === 'auth/email-already-in-use') {
-      throw new Error('Este e-mail já está em uso.');
-    }
-     if (error.code === 'auth/weak-password') {
-      throw new Error('A senha é muito fraca. Use pelo menos 6 caracteres.');
-    }
-    console.error("Erro ao criar usuário: ", error);
-    throw new Error("Não foi possível criar o usuário. Verifique os dados fornecidos.");
+    console.error("Error creating user:", error);
+    throw new Error(error.message || `Could not create user.`);
   }
 }
 
-// Função para obter a role de um usuário
 export async function getUserRole(uid: string): Promise<User['role'] | null> {
   try {
     const userDocRef = doc(db, "users", uid);
@@ -60,12 +56,11 @@ export async function getUserRole(uid: string): Promise<User['role'] | null> {
     }
     return null;
   } catch (error) {
-    console.error("Erro ao buscar role do usuário: ", error);
-    throw new Error("Não foi possível verificar a permissão do usuário.");
+    console.error("Error fetching user role: ", error);
+    throw new Error("Could not verify user permissions.");
   }
 }
 
-// Função para buscar todos os usuários
 export async function getAllUsers(): Promise<User[]> {
     try {
         const querySnapshot = await getDocs(usersCollectionRef);
@@ -79,69 +74,48 @@ export async function getAllUsers(): Promise<User[]> {
             };
         });
     } catch (error) {
-        console.error("Erro ao buscar usuários: ", error);
-        throw new Error("Não foi possível carregar a lista de usuários.");
+        console.error("Error fetching users: ", error);
+        throw new Error("Could not load the list of users.");
     }
 }
 
-// Função para chamar a API para alterar a senha de um usuário
 export async function updateUserPassword(uid: string, newPassword: string): Promise<void> {
-  const currentUser = auth.currentUser;
-  if (!currentUser) {
-      throw new Error("Usuário não autenticado. Por favor, faça login novamente.");
-  }
-
   try {
-    const idToken = await getIdToken(currentUser);
-
-    const response = await fetch('/api/setUserPassword', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${idToken}`
-        },
-        body: JSON.stringify({ uid: uid, password: newPassword })
+    const headers = await getAuthHeaders();
+    const response = await fetch(`/api/users/${uid}/password`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify({ password: newPassword })
     });
 
     if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || 'Falha ao alterar a senha.');
+        throw new Error(data.error || 'Failed to update password.');
     }
   } catch (error: any) {
-    console.error("Erro ao chamar a API para alterar senha:", error);
-    throw new Error(error.message || `Não foi possível alterar a senha.`);
+    console.error("Error updating password:", error);
+    throw new Error(error.message || `Could not update password.`);
   }
 }
 
-// Função para chamar a API para excluir uma conta de usuário (Auth + Firestore)
 export async function deleteUserAccount(uid: string): Promise<void> {
     const currentUser = auth.currentUser;
-    if (!currentUser) {
-        throw new Error("Usuário não autenticado. Por favor, faça login novamente.");
+    if (currentUser?.uid === uid) {
+        throw new Error("You cannot delete your own account.");
     }
-
-    if (currentUser.uid === uid) {
-        throw new Error("Você não pode excluir sua própria conta.");
-    }
-
     try {
-        const idToken = await getIdToken(currentUser);
-
-        const response = await fetch('/api/deleteUser', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${idToken}`
-            },
-            body: JSON.stringify({ uid: uid })
+        const headers = await getAuthHeaders();
+        const response = await fetch(`/api/users/${uid}`, {
+            method: 'DELETE',
+            headers
         });
 
-        if (!response.ok) {
+        if (!response.ok && response.status !== 204) {
             const data = await response.json();
-            throw new Error(data.error || 'Falha ao excluir o usuário.');
+            throw new Error(data.error || 'Failed to delete user.');
         }
     } catch (error: any) {
-        console.error("Erro ao chamar a API para excluir usuário:", error);
-        throw new Error(error.message || `Não foi possível excluir o usuário.`);
+        console.error("Error deleting user:", error);
+        throw new Error(error.message || `Could not delete user.`);
     }
 }
