@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { LogOut, Users, LayoutDashboard, Shield } from "lucide-react";
+import { LogOut, Users, LayoutDashboard } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 export default function ReceptionHeader() {
@@ -58,12 +58,6 @@ export default function ReceptionHeader() {
             <Link href="/reception/visitors">
               <Users />
               Visitantes
-            </Link>
-          </Button>
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/dashboard">
-              <Shield />
-              Admin
             </Link>
           </Button>
           <Button variant="outline" size="sm" asChild>
