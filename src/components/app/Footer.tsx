@@ -41,7 +41,15 @@ export default function Footer() {
           Reservados.
         </p>
         <p className="text-xs text-muted-foreground mt-2">
-          Desenvolvido por Isaque S. Burgheri
+          Desenvolvido por{" "}
+          <Link
+            href="https://www.linkedin.com/in/isaque-s-burgheri-07539a9a/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-primary transition-colors underline"
+          >
+            Isaque S. Burgheri
+          </Link>
         </p>
       </div>
     </footer>
