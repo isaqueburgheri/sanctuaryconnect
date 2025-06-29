@@ -133,7 +133,7 @@ export default function VisitorCheckinForm() {
               name="isBeliever"
               render={({ field }) => (
                 <FormItem className="space-y-3">
-                  <FormLabel>Já é membro de alguma igreja?</FormLabel>
+                  <FormLabel>É crente?</FormLabel>
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}

@@ -122,7 +122,7 @@ export default function VisitorList({ isAdmin = false }: VisitorListProps) {
                   Data da Visita
                 </div>
               </TableHead>
-              <TableHead>Membro?</TableHead>
+              <TableHead>Crente?</TableHead>
               <TableHead>Igreja</TableHead>
               <TableHead>Aceita Visita?</TableHead>
               <TableHead>Contato</TableHead>
