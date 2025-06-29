@@ -10,9 +10,11 @@ function initializeFirebaseAdmin() {
   if (!admin.apps.length) {
     try {
       // When deployed to App Hosting, applicationDefault() will use the
-      // App Hosting service account.
+      // App Hosting service account. Explicitly adding the projectId can
+      // resolve potential environment configuration issues.
       admin.initializeApp({
         credential: admin.credential.applicationDefault(),
+        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
       });
       console.log('Firebase Admin SDK initialized successfully.');
     } catch (error: any) {
@@ -61,23 +63,8 @@ export async function POST(req: NextRequest) {
     );
   } catch (error: any) {
     console.error('API Error creating user:', error);
-
-    // Check for the specific credential error message and return a helpful diagnostic.
-    if (
-      error.message &&
-      (error.message.includes('Credential implementation') ||
-        error.message.includes('access token'))
-    ) {
-      return NextResponse.json(
-        {
-          error:
-            'Erro de permissão no servidor. A aplicação não conseguiu se autenticar. Verifique no console do Google Cloud (IAM) se a conta de serviço do App Hosting tem o papel "Administrador do Firebase Authentication".',
-        },
-        {status: 500}
-      );
-    }
     
-    // Handle other known errors
+    // Handle known errors
     if (error instanceof z.ZodError) {
       const errorMessage = error.errors.map(e => e.message).join(', ');
       return NextResponse.json({error: errorMessage}, {status: 400});
@@ -87,6 +74,9 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({error: 'Este email já está em uso por outro usuário.'}, {status: 409});
     }
 
-    return NextResponse.json({error: error.message || 'An internal server error occurred.'}, {status: 500});
+    const detailedMessage = error.message || 'Ocorreu um erro desconhecido.';
+    // The previous custom error was pointing to an IAM role that the user has already configured.
+    // Return a more generic message but include the original error for diagnostics.
+    return NextResponse.json({error: `Falha na autenticação do servidor: ${detailedMessage}`}, {status: 500});
   }
 }
