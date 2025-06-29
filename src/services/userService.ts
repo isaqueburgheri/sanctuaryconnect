@@ -1,16 +1,13 @@
-import { auth, db } from "@/lib/firebase";
+import { auth } from "@/lib/firebase";
 import { getIdToken } from "firebase/auth";
-import {
-  collection,
-  doc,
-  getDoc,
-} from "firebase/firestore";
-import type { User, UserDocument } from "@/types/user";
+import type { User } from "@/types/user";
 
 async function getAuthHeaders() {
     const currentUser = auth.currentUser;
     if (!currentUser) {
-        throw new Error("User not authenticated. Please log in again.");
+       // O componente que chama vai lidar com o usuário não autenticado.
+       // Lançar um erro aqui pode impedir a renderização inicial.
+       return {};
     }
     const idToken = await getIdToken(currentUser);
     return {
@@ -19,104 +16,28 @@ async function getAuthHeaders() {
     };
 }
 
-export async function createUser(email: string, password: string): Promise<User> {
-  try {
-    const headers = await getAuthHeaders();
-    const response = await fetch('/api/users', {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ email, password })
-    });
-
-    const data = await response.json();
-    if (!response.ok) {
-        throw new Error(data.error || 'Failed to create user.');
-    }
-    return {
-        ...data.user,
-        createdAt: new Date(data.user.createdAt)
-    };
-  } catch (error: any) {
-    console.error("Error creating user:", error);
-    throw new Error(error.message || `Could not create user.`);
-  }
-}
-
-export async function getUserRole(uid: string): Promise<User['role'] | null> {
-  try {
-    const userDocRef = doc(db, "users", uid);
-    const userDoc = await getDoc(userDocRef);
-
-    if (userDoc.exists()) {
-      return (userDoc.data() as UserDocument).role;
-    }
-    return null;
-  } catch (error) {
-    console.error("Error fetching user role: ", error);
-    throw new Error("Could not verify user permissions.");
-  }
-}
-
 export async function getAllUsers(): Promise<User[]> {
     try {
         const headers = await getAuthHeaders();
+        // Se não houver headers de autenticação, não faz a chamada.
+        if (!headers.Authorization) {
+            return [];
+        }
+
         const response = await fetch('/api/users', {
             method: 'GET',
             headers,
         });
 
-        const data = await response.json();
         if (!response.ok) {
+            const data = await response.json();
             throw new Error(data.error || 'Failed to fetch users.');
         }
 
-        return data.map((user: any) => ({
-            ...user,
-            createdAt: new Date(user.createdAt),
-        }));
+        const data = await response.json();
+        return data; // Os dados já estão no formato correto, incluindo datas como strings ISO
     } catch (error: any) {
         console.error("Error fetching users: ", error);
         throw new Error(error.message || "Could not load the list of users.");
-    }
-}
-
-export async function updateUserPassword(uid: string, newPassword: string): Promise<void> {
-  try {
-    const headers = await getAuthHeaders();
-    const response = await fetch(`/api/users/${uid}/password`, {
-        method: 'PUT',
-        headers,
-        body: JSON.stringify({ password: newPassword })
-    });
-
-    if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Failed to update password.');
-    }
-  } catch (error: any) {
-    console.error("Error updating password:", error);
-    throw new Error(error.message || `Could not update password.`);
-  }
-}
-
-export async function deleteUserAccount(uid: string): Promise<void> {
-    const currentUser = auth.currentUser;
-    if (currentUser?.uid === uid) {
-        throw new Error("You cannot delete your own account.");
-    }
-    try {
-        const headers = await getAuthHeaders();
-        const response = await fetch(`/api/users/${uid}`, {
-            method: 'DELETE',
-            headers
-        });
-
-        if (!response.ok && response.status !== 204) {
-            const data = await response.json();
-            throw new Error(data.error || 'Failed to delete user.');
-        }
-    } catch (error: any) {
-        console.error("Error deleting user:", error);
-        throw new Error(error.message || `Could not delete user.`);
     }
 }

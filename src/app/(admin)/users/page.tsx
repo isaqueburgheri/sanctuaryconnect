@@ -1,4 +1,4 @@
-import UserManagement from "@/components/app/UserManagement";
+import UserList from "@/components/app/UserList";
 
 export default function UserManagementPage() {
   return (
@@ -8,10 +8,10 @@ export default function UserManagementPage() {
           Gerenciamento de Usuários
         </h2>
         <p className="mt-4 max-w-3xl mx-auto text-lg text-muted-foreground">
-          Crie, edite e remova contas para a equipe da recepção.
+          Lista de todos os usuários com acesso ao sistema.
         </p>
       </section>
-      <UserManagement />
+      <UserList />
     </div>
   );
 }

@@ -1,14 +1,7 @@
-import type { Timestamp } from "firebase/firestore";
-
 export interface User {
   id: string; // Firebase Auth UID
-  email: string;
-  role: "Admin" | "Recepção";
+  email?: string;
+  role: "Admin" | "Recepção" | "Unknown";
   createdAt: Date;
-}
-
-export interface UserDocument {
-  email: string;
-  role: "Admin" | "Recepção";
-  createdAt: Timestamp;
+  lastLogin: Date | null;
 }
