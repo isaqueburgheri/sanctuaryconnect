@@ -2,15 +2,25 @@ import { NextResponse } from 'next/server';
 import * as admin from 'firebase-admin';
 import type { CreateUserInput } from '@/types/user';
 
+// Initialize Firebase Admin SDK
 try {
   if (!admin.apps.length) {
+    // Using initializeApp() without arguments is the recommended way for Cloud environments
     admin.initializeApp();
   }
-} catch (error) {
+} catch (error: any) {
   console.error('Firebase Admin Initialization Error:', error);
 }
 
 export async function POST(request: Request) {
+  // Check if SDK initialized properly
+  if (!admin.apps.length) {
+    return NextResponse.json(
+      { error: 'Falha na inicialização do servidor. Não foi possível conectar ao Firebase.' },
+      { status: 500 }
+    );
+  }
+
   try {
     const { email, password, role } = (await request.json()) as CreateUserInput;
 
@@ -41,13 +51,27 @@ export async function POST(request: Request) {
   } catch (error: any) {
     console.error('Error creating user:', error);
 
-    let errorMessage = 'Ocorreu um erro ao criar o usuário.';
-    if (error.code === 'auth/email-already-exists') {
-      errorMessage = 'Este email já está em uso.';
-    } else if (error.code === 'auth/invalid-password') {
-        errorMessage = 'A senha deve ter pelo menos 6 caracteres.';
-    } else if (error.code === 'permission-denied' || error.message.includes('permission-denied')) {
-        errorMessage = 'Erro de permissão no servidor. Verifique se a Conta de Serviço do App Hosting possui o papel "Administrador do Firebase Authentication" no IAM.';
+    // Provide a more specific error message back to the client
+    let errorMessage = 'Ocorreu um erro desconhecido ao criar o usuário.';
+    if (error.code) {
+      switch (error.code) {
+        case 'auth/email-already-exists':
+          errorMessage = 'Este email já está em uso por outro usuário.';
+          break;
+        case 'auth/invalid-password':
+          errorMessage = 'A senha é inválida. Ela deve ter pelo menos 6 caracteres.';
+          break;
+        // This is the most likely error given the context of App Hosting permissions
+        case 'auth/internal-error':
+        case 'permission-denied':
+            errorMessage = 'O servidor não tem permissão para criar usuários. Verifique as permissões do IAM para a Conta de Serviço do App Hosting. Ela precisa do papel "Administrador do Firebase Authentication".';
+            break;
+        default:
+          errorMessage = `Ocorreu um erro no servidor (${error.code}).`;
+          break;
+      }
+    } else if (error.message) {
+        errorMessage = error.message;
     }
 
     return NextResponse.json({ error: errorMessage }, { status: 500 });
