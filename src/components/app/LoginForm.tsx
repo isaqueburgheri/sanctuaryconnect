@@ -61,7 +61,7 @@ export default function LoginForm() {
                 title: "Login bem-sucedido!",
                 description: "Bem-vindo(a), administrador.",
             });
-            router.push("/visitors");
+            router.push("/dashboard");
         } else if (role === 'Recepção') {
             toast({
                 title: "Login bem-sucedido!",

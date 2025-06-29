@@ -1,6 +1,7 @@
-import { auth } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
 import { getIdToken } from "firebase/auth";
 import type { User } from "@/types/user";
+import { doc, getDoc } from "firebase/firestore";
 
 async function getAuthHeaders() {
     const currentUser = auth.currentUser;
@@ -39,5 +40,24 @@ export async function getAllUsers(): Promise<User[]> {
     } catch (error: any) {
         console.error("Error fetching users: ", error);
         throw new Error(error.message || "Could not load the list of users.");
+    }
+}
+
+
+export async function getUserRole(uid: string): Promise<'Admin' | 'Recepção' | null> {
+    try {
+        const userDocRef = doc(db, "users", uid);
+        const userDoc = await getDoc(userDocRef);
+
+        if (userDoc.exists()) {
+            const role = userDoc.data().role;
+            if (role === 'Admin' || role === 'Recepção') {
+                return role;
+            }
+        }
+        return null;
+    } catch (error) {
+        console.error("Error fetching user role:", error);
+        throw new Error("Failed to fetch user role from the database.");
     }
 }
