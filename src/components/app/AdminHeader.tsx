@@ -38,21 +38,21 @@ export default function AdminHeader() {
         </div>
         <nav className="flex items-center gap-2">
           <Button
-            variant={pathname.startsWith("/dashboard") ? "secondary" : "ghost"}
-            size="sm" asChild
-          >
-            <Link href="/dashboard">
-              <BarChart3 />
-              Dashboard
-            </Link>
-          </Button>
-          <Button
             variant={pathname.startsWith("/visitors") ? "secondary" : "ghost"}
             size="sm" asChild
           >
             <Link href="/visitors">
               <Users />
               Visitantes
+            </Link>
+          </Button>
+          <Button
+            variant={pathname.startsWith("/dashboard") ? "secondary" : "ghost"}
+            size="sm" asChild
+          >
+            <Link href="/dashboard">
+              <BarChart3 />
+              Dashboard
             </Link>
           </Button>
            <Button
