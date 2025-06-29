@@ -126,13 +126,14 @@ export default function VisitorList({ isAdmin = false }: VisitorListProps) {
               <TableHead>Igreja</TableHead>
               <TableHead>Aceita Visita?</TableHead>
               <TableHead>Contato</TableHead>
+              <TableHead>Observações</TableHead>
               {isAdmin && <TableHead>Ações</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={isAdmin ? 7 : 6} className="text-center h-24">
+                <TableCell colSpan={isAdmin ? 8 : 7} className="text-center h-24">
                   <div className="flex justify-center items-center gap-2">
                     <Loader2 className="h-5 w-5 animate-spin" />
                     <span>Carregando visitantes...</span>
@@ -162,6 +163,7 @@ export default function VisitorList({ isAdmin = false }: VisitorListProps) {
                     </Badge>
                   </TableCell>
                   <TableCell>{visitor.contact || "Não informado"}</TableCell>
+                  <TableCell>{visitor.observations || "N/A"}</TableCell>
                    {isAdmin && (
                     <TableCell>
                       <AlertDialog>
@@ -191,7 +193,7 @@ export default function VisitorList({ isAdmin = false }: VisitorListProps) {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={isAdmin ? 7 : 6} className="text-center h-24">
+                <TableCell colSpan={isAdmin ? 8 : 7} className="text-center h-24">
                   {showOnlyToday
                     ? "Nenhum visitante registrado hoje."
                     : "Nenhum visitante registrado."}

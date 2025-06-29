@@ -8,6 +8,7 @@ export interface Visitor {
   contact?: string;
   wantsVisit: boolean;
   visitDate: Date;
+  observations?: string;
 }
 
 export interface VisitorInput {
@@ -16,6 +17,7 @@ export interface VisitorInput {
   churchName?: string;
   contact?: string;
   wantsVisit: boolean;
+  observations?: string;
 }
 
 export interface VisitorDocument {
@@ -25,4 +27,5 @@ export interface VisitorDocument {
   contact?: string;
   wantsVisit: boolean;
   visitDate: Timestamp;
+  observations?: string;
 }

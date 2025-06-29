@@ -28,6 +28,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 import { addVisitor } from "@/services/visitorService";
 import type { VisitorInput } from "@/types/visitor";
+import { Textarea } from "../ui/textarea";
 
 const formSchema = z.object({
   name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres."),
@@ -37,6 +38,7 @@ const formSchema = z.object({
   churchName: z.string().optional(),
   contact: z.string().optional(),
   wantsVisit: z.boolean().default(false).optional(),
+  observations: z.string().optional(),
 });
 
 const formatPhoneNumber = (value: string) => {
@@ -66,6 +68,7 @@ export default function VisitorCheckinForm() {
       churchName: "",
       contact: "",
       wantsVisit: false,
+      observations: "",
     },
   });
 
@@ -218,6 +221,23 @@ export default function VisitorCheckinForm() {
                       Aceita receber uma visita em sua casa
                     </FormLabel>
                   </div>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="observations"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Observações (Opcional)</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Alguma informação adicional? Ex: pedido de oração, necessidade específica, etc."
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />
