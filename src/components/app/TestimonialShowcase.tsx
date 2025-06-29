@@ -10,24 +10,20 @@ import { Quote, Heart } from "lucide-react";
 
 const testimonials = [
   {
-    quote:
-      "Encontrar esta igreja foi como voltar para casa. A comunidade é muito acolhedora e eu cresci muito na minha fé aqui.",
-    name: "Maria S.",
+    quote: "Igreja maravilhosa, Pessoas abençoadas...",
+    name: "Eliane Silva",
   },
   {
-    quote:
-      "Os sermões são sempre tão perspicazes e relevantes para a minha vida. Saio inspirado(a) toda semana.",
-    name: "Davi L.",
+    quote: "Lugar de adoração ao senhor Jesus, onde todos são bem vindos.",
+    name: "Ana Paula Souza",
   },
   {
-    quote:
-      "Meus filhos amam o programa de jovens! É um ambiente seguro, divertido e cheio de fé. Somos muito gratos.",
-    name: "A Família Silva",
+    quote: "Um lugar abençoado pra adorar a Deus.",
+    name: "Edson Pereira",
   },
   {
-    quote:
-      "Durante um período difícil, esta igreja foi minha rocha. O apoio em oração e o cuidado genuíno que recebi foram uma verdadeira bênção.",
-    name: "Eleonora P.",
+    quote: "Lugar de paz, onde sinto a presença de Deus.",
+    name: "Lucinete Santos",
   },
 ];
 
@@ -58,7 +54,7 @@ export default function TestimonialShowcase() {
                   <CardContent className="pt-6 relative">
                     <Quote className="absolute top-4 left-4 h-8 w-8 text-primary/20" />
                     <p className="pl-6 pt-6 italic text-foreground/80">
-                      {testimonial.quote}
+                      "{testimonial.quote}"
                     </p>
                   </CardContent>
                   <CardFooter>
