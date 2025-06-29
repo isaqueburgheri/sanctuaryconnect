@@ -1,21 +1,9 @@
 'use server';
 import { NextRequest, NextResponse } from 'next/server';
-import * as admin from 'firebase-admin';
+import { adminAuth, adminDb } from '@/lib/firebase-admin';
 
 export async function DELETE(req: NextRequest, { params }: { params: { uid: string } }) {
-  if (!admin.apps.length) {
-    try {
-      admin.initializeApp();
-    } catch (initError: any) {
-      console.error('Firebase Admin initialization error:', initError);
-      return NextResponse.json({ error: 'Firebase Admin initialization error.' }, { status: 500 });
-    }
-  }
-
   try {
-    const adminAuth = admin.auth();
-    const adminDb = admin.firestore();
-
     const idToken = req.headers.get('Authorization')?.split('Bearer ')[1];
     if (!idToken) {
         return NextResponse.json({ error: 'Authentication token is missing.' }, { status: 401 });
@@ -43,7 +31,9 @@ export async function DELETE(req: NextRequest, { params }: { params: { uid: stri
       return NextResponse.json({ error: 'Administrators cannot delete their own account.' }, { status: 400 });
     }
     
+    // Deleta do Firestore primeiro
     await adminDb.collection('users').doc(targetUid).delete();
+    // Depois, deleta do Firebase Auth
     await adminAuth.deleteUser(targetUid);
     
     return new NextResponse(null, { status: 204 });
@@ -51,6 +41,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { uid: stri
   } catch (error: any) {
     console.error('API Error deleting user:', error);
     if (error.code === 'auth/user-not-found') {
+        // Se o usuário já não existe no Auth, a operação pode ser considerada bem-sucedida.
         return new NextResponse(null, { status: 204 });
     }
     const errorMessage = error.message || 'An internal server error occurred.';

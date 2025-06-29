@@ -1,22 +1,9 @@
 'use server';
 import { NextRequest, NextResponse } from 'next/server';
-import * as admin from 'firebase-admin';
+import { adminAuth, adminDb, adminFirestore } from '@/lib/firebase-admin';
 
 export async function POST(req: NextRequest) {
-  if (!admin.apps.length) {
-    try {
-      admin.initializeApp();
-    } catch (initError: any) {
-      console.error('Firebase Admin initialization error:', initError);
-      return NextResponse.json({ error: 'Firebase Admin initialization error.' }, { status: 500 });
-    }
-  }
-  
   try {
-    const adminAuth = admin.auth();
-    const adminDb = admin.firestore();
-    const adminFirestore = admin.firestore;
-
     const idToken = req.headers.get('Authorization')?.split('Bearer ')[1];
     if (!idToken) {
       return NextResponse.json({ error: 'Authentication token is missing.' }, { status: 401 });
