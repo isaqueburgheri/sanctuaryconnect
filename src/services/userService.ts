@@ -1,45 +1,36 @@
 import { auth, db } from "@/lib/firebase";
-import { getIdToken } from "firebase/auth";
 import type { User } from "@/types/user";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, collection, getDocs, query, orderBy } from "firebase/firestore";
 
-async function getAuthHeaders() {
-    const currentUser = auth.currentUser;
-    if (!currentUser) {
-       // O componente que chama vai lidar com o usuário não autenticado.
-       // Lançar um erro aqui pode impedir a renderização inicial.
-       return {};
-    }
-    const idToken = await getIdToken(currentUser);
-    return {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${idToken}`
-    };
-}
-
+/**
+ * Fetches all user documents from the 'users' collection in Firestore.
+ * This is a client-side operation and does not require the Admin SDK.
+ * It will only return users that have a corresponding document in Firestore.
+ */
 export async function getAllUsers(): Promise<User[]> {
     try {
-        const headers = await getAuthHeaders();
-        // Se não houver headers de autenticação, não faz a chamada.
-        if (!headers.Authorization) {
-            return [];
-        }
+        const usersCollectionRef = collection(db, "users");
+        // We can't order by role easily without a composite index, so we'll sort client-side if needed.
+        const q = query(usersCollectionRef); 
+        const querySnapshot = await getDocs(q);
 
-        const response = await fetch('/api/users', {
-            method: 'GET',
-            headers,
+        const users: User[] = querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                role: data.role || "Unknown",
+                // The client-side SDK cannot access Auth-specific details like email,
+                // createdAt, or lastLogin for other users. We return placeholders.
+                email: `Usuário (${doc.id.substring(0, 5)}...)`,
+                createdAt: new Date(), // Placeholder
+                lastLogin: null, // Placeholder
+            };
         });
 
-        if (!response.ok) {
-            const data = await response.json();
-            throw new Error(data.error || 'Failed to fetch users.');
-        }
-
-        const data = await response.json();
-        return data; // Os dados já estão no formato correto, incluindo datas como strings ISO
+        return users;
     } catch (error: any) {
-        console.error("Error fetching users: ", error);
-        throw new Error(error.message || "Could not load the list of users.");
+        console.error("Error fetching users from Firestore: ", error);
+        throw new Error(error.message || "Could not load the list of users from Firestore.");
     }
 }
 

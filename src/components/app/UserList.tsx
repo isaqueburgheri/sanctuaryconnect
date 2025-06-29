@@ -23,8 +23,6 @@ import type { User } from "@/types/user";
 import { getAllUsers } from "@/services/userService";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 
 export default function UserList() {
   const [users, setUsers] = useState<User[]>([]);
@@ -63,37 +61,27 @@ export default function UserList() {
     return () => unsubscribe();
   }, [toast]);
 
-  const formatDate = (date: Date | null) => {
-    if (!date) return 'N/A';
-    try {
-      return format(new Date(date), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
-    } catch {
-      return 'Data inválida';
-    }
-  }
-
   return (
     <Card>
       <CardHeader>
         <CardTitle>Usuários do Sistema</CardTitle>
         <CardDescription>
-          Lista de todos os usuários registrados no sistema.
+          Lista de usuários registrados no banco de dados do sistema.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Email</TableHead>
+              <TableHead>Email / ID do Usuário</TableHead>
               <TableHead>Cargo</TableHead>
-              <TableHead>Criado Em</TableHead>
-              <TableHead>Último Login</TableHead>
+              <TableHead>Informações Adicionais</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={4} className="h-24 text-center">
+                <TableCell colSpan={3} className="h-24 text-center">
                   <div className="flex justify-center items-center">
                     <Loader2 className="mr-2 h-6 w-6 animate-spin" />
                     Carregando usuários...
@@ -102,14 +90,14 @@ export default function UserList() {
               </TableRow>
             ) : users.length === 0 ? (
                <TableRow>
-                  <TableCell colSpan={4} className="h-24 text-center">
+                  <TableCell colSpan={3} className="h-24 text-center">
                     Nenhum usuário encontrado. Faça login para ver a lista.
                   </TableCell>
                 </TableRow>
             ) : (
               users.map((user) => (
                 <TableRow key={user.id}>
-                  <TableCell className="font-medium">{user.email || 'Sem email'}</TableCell>
+                  <TableCell className="font-medium">{user.email || user.id}</TableCell>
                   <TableCell>
                     <Badge
                       variant={user.role === "Admin" ? "default" : user.role === "Recepção" ? "secondary" : "outline"}
@@ -117,11 +105,8 @@ export default function UserList() {
                       {user.role}
                     </Badge>
                   </TableCell>
-                  <TableCell>
-                    {formatDate(user.createdAt)}
-                  </TableCell>
-                  <TableCell>
-                    {formatDate(user.lastLogin)}
+                   <TableCell>
+                    N/A
                   </TableCell>
                 </TableRow>
               ))
