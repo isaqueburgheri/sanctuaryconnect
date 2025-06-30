@@ -29,7 +29,7 @@ import type { PrayerRequestInput } from "@/types/prayerRequest";
 
 const formSchema = z.object({
   name: z.string().optional(),
-  request: z.string().min(10, "Por favor, descreva seu pedido para que possamos orar especificamente por você."),
+  request: z.string().min(10, "O pedido de oração deve ter pelo menos 10 caracteres."),
 });
 
 export default function PrayerRequestForm() {
@@ -56,7 +56,7 @@ export default function PrayerRequestForm() {
       toast({
         variant: "destructive",
         title: "Erro ao Enviar",
-        description: error instanceof Error ? error.message : "Ocorreu um erro desconhecido.",
+        description: "Não foi possível enviar o pedido. Por favor, verifique sua conexão e tente novamente.",
       });
     } finally {
       setIsLoading(false);
